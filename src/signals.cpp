@@ -1,21 +1,34 @@
 #include "signals.h"
+#include <cmath>
+
+Signals::Signals() {}
 
 Signals& Signals::getInstance() {
     static Signals instance;
     return instance;
 }
 
-std::vector<std::array<float, 2>>& Signals::getData() {
-    return data;
+void Signals::addSignal(float amplitude, float frequency, float phaseShift) {
+    generateSignalPoints(amplitude, frequency, phaseShift);
 }
 
-void Signals::generateSignalPoints(int numPoints, float amplitude, float frequency, float phaseShift) {
-    data.resize(numPoints);
-    for (int i = 0; i < numPoints; ++i) {
-        data[i] = { static_cast<float>(i), amplitude * std::sin(frequency * i + phaseShift) };
-    }
+std::vector<Instance>& Signals::getData(size_t patternIndex) {
+    return data.at(patternIndex);
 }
 
 size_t Signals::getSignalLength() const {
-    return data.size();
+    return data.empty() ? 0 : data.front().size();
+}
+
+void Signals::generateSignalPoints(float amplitude, float frequency, float phaseShift) {
+    std::vector<Instance> sig(16000);
+    for (size_t i = 0; i < sig.size(); ++i) {
+        float time = static_cast<float>(i);
+        sig[i].val.secData = amplitude * sin(frequency * time + phaseShift);
+        sig[i].val.q = 0xFFFF;
+        sig[i].timeStamp.utcTime.sec = static_cast<int32_t>(time);
+        sig[i].timeStamp.utcTime.nsec = static_cast<int32_t>(time * 1e9);
+        sig[i].timeStamp.smpCnt = static_cast<int32_t>(i);
+    }
+    data.push_back(sig);
 }

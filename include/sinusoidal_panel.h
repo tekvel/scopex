@@ -8,15 +8,16 @@
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
+#include <wx/scrolwin.h>
 
-class SinusoidalPanel : public wxPanel
+class SinusoidalPanel : public wxScrolledWindow
 {
 public:
     SinusoidalPanel(wxWindow* parent);
 
-    float multiplier;
     float xScale;
     float yScale;
+    int lcnt;
     wxPoint pivotPoint;
 
     wxPoint GetPivotPoint() const { return pivotPoint; }

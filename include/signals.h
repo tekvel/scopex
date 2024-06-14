@@ -1,31 +1,49 @@
 #ifndef SIGNALS_H
 #define SIGNALS_H
 
-#include <wx/wx.h>
-#include <cmath>
-#include <array>
 #include <vector>
+#include <cmath>
+#include <stdint.h>
 
 #define AMPLITUDE 200.0f
 #define FREQUENCY (50.0f * M_PI / 100000.0f)
 #define PHASESHIFT120 (2.0f * M_PI / 3.0f)
 #define PHASESHIFTNEG120 (-2.0f * M_PI / 3.0f)
 
+struct Utc {
+    int32_t sec;
+    int32_t nsec;
+};
+
+struct Ts {
+    Utc utcTime;
+    int32_t smpCnt;
+};
+
+struct Value {
+    float secData;
+    uint16_t q;
+};
+
+struct Instance {
+    Value val;
+    Ts timeStamp;
+};
+
 class Signals {
 public:
     static Signals& getInstance();
-
-    std::vector<std::array<float, 2>>& getData();
-    void generateSignalPoints(int numPoints, float amplitude = AMPLITUDE, float frequency = FREQUENCY, float phaseShift = 0.0f);
-    // void generateSignalPoints(int numPoints, float amplitude = AMPLITUDE, float frequency = FREQUENCY, float phaseShift = 0.0f);
+    void addSignal(float amplitude = AMPLITUDE, float frequency = FREQUENCY, float phaseShift = 0.0f);
+    std::vector<Instance>& getData(size_t patternIndex);
     size_t getSignalLength() const;
 
 private:
-    Signals() {}
+    Signals();
     Signals(const Signals&) = delete;
     Signals& operator=(const Signals&) = delete;
+    void generateSignalPoints(float amplitude, float frequency, float phaseShift);
 
-    std::vector<std::array<float, 2>> data;
+    std::vector<std::vector<Instance>> data;
 };
 
-#endif
+#endif // SIGNALS_H

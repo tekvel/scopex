@@ -4,6 +4,7 @@
 #include <wx/wx.h>
 #include <wx/panel.h>
 #include "sinusoidal_panel.h"
+#include "vector_panel.h"
 
 class upPanel : public wxPanel
 {
@@ -31,7 +32,7 @@ class downPanel : public wxPanel
 {
 public:
     downPanel(wxPanel *parent);
-    wxStaticBitmap* m_bitmap1;
+    VectorPanel* m_vecPanel;
     SinusoidalPanel* m_sinPanel;
 
 private:

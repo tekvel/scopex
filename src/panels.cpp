@@ -8,7 +8,7 @@ upPanel::upPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition,
     m_parent = parent;
     m_gsizer1 = new wxGridSizer(0,2,0,0);
 
-    m_sliderX = new wxSlider( this, ID_X, 50, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+    m_sliderX = new wxSlider( this, ID_X, 50, 2, 102, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
 	m_gsizer1->Add( m_sliderX, 1, wxALL|wxEXPAND, 15 );
 
 	m_sliderY = new wxSlider( this, ID_Y, 50, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
@@ -69,10 +69,10 @@ downPanel::downPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosit
 {
     m_bsizer2 = new wxBoxSizer(wxHORIZONTAL);
 
-    m_bitmap1 = new wxStaticBitmap( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
-    m_bsizer2->Add( m_bitmap1, 1, wxALIGN_CENTER|wxALL|wxSHAPED, 15 );
+    m_vecPanel = new VectorPanel( this );
+    m_bsizer2->Add( m_vecPanel, 1, wxALIGN_CENTER|wxALL|wxSHAPED, 15 );
 
-    m_sinPanel = new SinusoidalPanel(this);
+    m_sinPanel = new SinusoidalPanel( this );
     m_bsizer2->Add( m_sinPanel, 3, wxALL|wxEXPAND, 15);
     
     this->SetSizer(m_bsizer2);
