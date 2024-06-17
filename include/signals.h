@@ -6,13 +6,16 @@
 #include <stdint.h>
 
 #define AMPLITUDE 200.0f
-#define FREQUENCY (50.0f * M_PI / 100000.0f)
+#define FREQUENCY (50.0f / 1.0f)
 #define PHASESHIFT120 (2.0f * M_PI / 3.0f)
 #define PHASESHIFTNEG120 (-2.0f * M_PI / 3.0f)
 
+#define samplingRate 4000
+#define dt (1.0f/samplingRate)
+
 struct Utc {
-    int32_t sec;
-    int32_t nsec;
+    float sec;
+    float nsec;
 };
 
 struct Ts {

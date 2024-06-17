@@ -21,14 +21,14 @@ size_t Signals::getSignalLength() const {
 }
 
 void Signals::generateSignalPoints(float amplitude, float frequency, float phaseShift) {
-    std::vector<Instance> sig(16000);
+    std::vector<Instance> sig(321);
     for (size_t i = 0; i < sig.size(); ++i) {
-        float time = static_cast<float>(i);
-        sig[i].val.secData = amplitude * sin(frequency * time + phaseShift);
+        float time = static_cast<float>(i*dt);
+        sig[i].val.secData = amplitude * sin(frequency * M_PI * 2 * time + phaseShift);
         sig[i].val.q = 0xFFFF;
-        sig[i].timeStamp.utcTime.sec = static_cast<int32_t>(time);
-        sig[i].timeStamp.utcTime.nsec = static_cast<int32_t>(time * 1e9);
-        sig[i].timeStamp.smpCnt = static_cast<int32_t>(i);
+        sig[i].timeStamp.utcTime.sec = time;
+        sig[i].timeStamp.utcTime.nsec = time * 1e9;
+        sig[i].timeStamp.smpCnt = static_cast<int32_t>(i%samplingRate);
     }
     data.push_back(sig);
 }

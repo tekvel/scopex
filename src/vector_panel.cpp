@@ -34,15 +34,15 @@ void VectorPanel::Render(wxDC& dc)
     dc.DrawLine(0, centerY, width, centerY);
     dc.DrawLine(centerX, 0, centerX, height);
 
-    dc.DrawText(wxString::Format("(%d)", (width)), centerX, centerY-40);
+    // dc.DrawText(wxString::Format("(%d)", (width)), centerX, centerY-40);
 
     // Drawing vector for sinusoidal signal
-    double amplitude = 100.0;
+    double amplitude = 200.0;
     
     dc.SetPen(wxPen(wxColor(PHASE_A_COLOR), 5));
-    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.9 * cos(0.0f), centerY - amplitude/AMPLITUDE * width * 0.9 * sin(0.0f));
+    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.45 * cos(0.0f), centerY - amplitude/AMPLITUDE * width * 0.45 * sin(0.0f));
     dc.SetPen(wxPen(wxColor(PHASE_B_COLOR), 5));
-    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.9 * cos(PHASESHIFT120), centerY - amplitude/AMPLITUDE * width * 0.9 * sin(PHASESHIFT120));
+    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.45 * cos(PHASESHIFT120), centerY - amplitude/AMPLITUDE  * width * 0.45 * sin(PHASESHIFT120));
     dc.SetPen(wxPen(wxColor(PHASE_C_COLOR), 5));
-    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.9 * cos(PHASESHIFTNEG120), centerY - amplitude/AMPLITUDE * width * 0.9 * sin(PHASESHIFTNEG120));
+    dc.DrawLine(centerX, centerY, centerX + amplitude/AMPLITUDE * width * 0.45 * cos(PHASESHIFTNEG120), centerY - amplitude/AMPLITUDE  * width * 0.45 * sin(PHASESHIFTNEG120));
 }

@@ -8,7 +8,7 @@ upPanel::upPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition,
     m_parent = parent;
     m_gsizer1 = new wxGridSizer(0,2,0,0);
 
-    m_sliderX = new wxSlider( this, ID_X, 50, 2, 102, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+    m_sliderX = new wxSlider( this, ID_X, 10, 2, 202, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
 	m_gsizer1->Add( m_sliderX, 1, wxALL|wxEXPAND, 15 );
 
 	m_sliderY = new wxSlider( this, ID_Y, 50, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
