@@ -19,7 +19,7 @@ file(GLOB_RECURSE SOURCE_FILES
 
 # Collect all header files
 file(GLOB_RECURSE HEADER_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
 
 # Add executable target
