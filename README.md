@@ -28,3 +28,15 @@ Running:
 ```bash
 ./build/prog
 ```
+
+---
+
+## This project is currently in the development stage
+### Roadmap
+
+- [x] Graphical panels for drawing signals
+- [ ] The ability to select a network interface
+- [ ] The ability to subscribe to various SV streams
+- [ ] SV parser
+- [ ] The ability to determine signal parameters
+- [ ] The ability to upload/download signals

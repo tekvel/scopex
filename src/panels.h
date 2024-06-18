@@ -18,10 +18,10 @@ public:
 
 
 private:
+    wxStaticText* m_textX;
+    wxStaticText* m_textY;
     wxSlider* m_sliderX;
     wxSlider* m_sliderY;
-    wxTextCtrl* m_textCtrl1;
-    wxTextCtrl* m_textCtrl2;
     wxGridSizer* m_gsizer1;
     wxPanel* m_parent;
     float amp;
@@ -42,7 +42,5 @@ private:
 
 const int ID_X = 101;
 const int ID_Y = 102;
-const int ID_control1 = 201;
-const int ID_control2 = 202;
 
 #endif // PANELS_H
