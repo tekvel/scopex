@@ -1,7 +1,7 @@
 #include "panels.h"
 #include <wx/wx.h>
 #include <wx/stattext.h>
-#include "communicate.h"
+#include "main_frame.h"
 
 upPanel::upPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL )
 {
@@ -33,14 +33,14 @@ upPanel::upPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition,
 
 void upPanel::OnXScaleChanged(wxCommandEvent& event){
     float xScale = event.GetInt() / 100.0;
-    Communicate* comm = (Communicate *) m_parent->GetParent();
-    comm->m_dp->m_sinPanel->SetScale(xScale, comm->m_dp->m_sinPanel->GetYScale());
+    MainFrame* frame = (MainFrame *) m_parent->GetParent();
+    frame->m_dp->m_sinPanel->SetScale(xScale, frame->m_dp->m_sinPanel->GetYScale());
 }
 
 void upPanel::OnYScaleChanged(wxCommandEvent& event){
     float yScale = event.GetInt() / 100.0;
-    Communicate* comm = (Communicate *) m_parent->GetParent();
-    comm->m_dp->m_sinPanel->SetScale(comm->m_dp->m_sinPanel->GetXScale(), yScale);
+    MainFrame* frame = (MainFrame *) m_parent->GetParent();
+    frame->m_dp->m_sinPanel->SetScale(frame->m_dp->m_sinPanel->GetXScale(), yScale);
 }
 
 downPanel::downPanel(wxPanel* parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL )

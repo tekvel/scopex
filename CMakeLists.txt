@@ -12,6 +12,13 @@ find_package(wxWidgets REQUIRED COMPONENTS core base)
 
 include(${wxWidgets_USE_FILE})
 
+# Find pcap using pcap-config
+find_package(PkgConfig REQUIRED)
+pkg_search_module(PCAP REQUIRED libpcap)
+
+# Include directories for pcap
+include_directories(${PCAP_INCLUDE_DIRS})
+
 # Collect all source files
 file(GLOB_RECURSE SOURCE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -27,6 +34,9 @@ add_executable(prog ${SOURCE_FILES} ${HEADER_FILES})
 
 # Link wxWidgets libraries
 target_link_libraries(prog ${wxWidgets_LIBRARIES})
+
+target_link_libraries(prog ${PCAP_LIBRARIES})
+
 
 # Include directories
 target_include_directories(prog PRIVATE ${wxWidgets_INCLUDE_DIRS} include)
