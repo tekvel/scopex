@@ -13,13 +13,13 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_menubar->Append(menuFile, wxT("&File"));
 
 	menuNetwork = new wxMenu;
-	menuNetwork->Append(wxID_NETWORK_DIALOG, wxT("&Network Selection"));
+	menuNetwork->Append(wxID_NETWORK_DIALOG, wxT("&Select Network"));
 	// menuNetwork->Append(THREAD_START_THREAD, wxT("&Thread"));
-	m_menubar->Append(menuNetwork, wxT("&Select Network"));
+	m_menubar->Append(menuNetwork, wxT("&Network Selection"));
 
 	menuHelp = new wxMenu;
 	menuHelp->Append(wxID_ABOUT, wxT("&Help"));
-	m_menubar->Append(menuHelp, wxT("About"));
+	m_menubar->Append(menuHelp, wxT("&About"));
 	SetMenuBar(m_menubar);
 
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);
@@ -105,7 +105,7 @@ void MainFrame::OnNetworkSelect(wxCommandEvent &event)
 
 NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
 	: wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(550, 350)),
-	  m_choiceBox(nullptr)
+	  devs(nullptr)
 {
 	wxPanel *panel = new wxPanel(this, -1);
 	wxBoxSizer *vbox1 = new wxBoxSizer(wxVERTICAL);
@@ -159,10 +159,10 @@ NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
 void NetworkSelectionDialog::InitializeNetworkDevices()
 {
 	char errbuf[PCAP_ERRBUF_SIZE]; // Buffer to hold error text
-	pcap_if_t *interfaces, *temp;
+	pcap_if_t *temp;
 	int i = 0;
 
-	if (pcap_findalldevs(&interfaces, errbuf) == -1)
+	if (pcap_findalldevs(&devs, errbuf) == -1)
 	{
 		std::cerr << "Error in pcap_findalldevs: " << errbuf << std::endl;
 		return;
@@ -172,18 +172,16 @@ void NetworkSelectionDialog::InitializeNetworkDevices()
 
 	deviceList.Add(wxT(" "));
 
-	for (temp = interfaces; temp; temp = temp->next)
+	for (temp = devs; temp; temp = temp->next)
 	{
 		wxString deviceName = wxString::Format(wxT("%d: %s"), ++i, temp->name);
-		if (temp->description)
-			deviceName += wxString::Format(wxT(" (%s)"), temp->description);
+		// if (temp->description)
+		// 	deviceName += wxString::Format(wxT(" (%s)"), temp->description);
 		deviceList.Add(deviceName);
 	}
 
 	m_choiceBox->Append(deviceList);
 	m_choiceBox->SetSelection(0);
-
-	pcap_freealldevs(interfaces);
 }
 
 void NetworkSelectionDialog::OnCancel(wxCommandEvent &event)
@@ -196,6 +194,54 @@ void NetworkSelectionDialog::OnOK(wxCommandEvent &event)
 {
 	int selectionIndex = m_choiceBox->GetSelection();
 	wxString selection = m_choiceBox->GetString(selectionIndex);
-	wxMessageBox("You selected: " + selection, "Information", wxOK | wxICON_INFORMATION);
+
+	int count = 0;
+	pcap_if_t *dev;
+	for (pcap_if_t *device = devs; device != NULL; device = device->next)
+	{
+		if (count == selectionIndex - 1)
+		{
+			dev = device;
+		}
+		count++;
+	}
+
+	// std::cout << dev->name << std::endl;
+
+	bpf_u_int32 netp;			   // network address
+	bpf_u_int32 maskp;			   // network mask
+	char errbuf[PCAP_ERRBUF_SIZE]; // Error buffer
+	pcap_t *handle;				   // Session handle
+	struct pcap_pkthdr header;	   // The header that pcap gives us
+	const u_char *packet;		   // The actual packet
+
+	if (pcap_lookupnet(dev->name, &netp, &maskp, errbuf) == -1)
+	{
+		wxMessageBox("Error in pcap_lookupnet: " + wxString(errbuf), "Error", wxOK | wxICON_ERROR);
+	}
+	else
+	{
+		wxString message;
+		// message.Printf("Network: %u, Mask: %u", netp, maskp);
+		message.Printf(wxString::Format(wxT("Network: 0x%x, Mask: 0x%x"), netp, maskp));
+		wxMessageBox(message, "Network Information", wxOK | wxICON_INFORMATION);
+	}
+	handle = pcap_open_live(dev->name, BUFSIZ, 1, 1000, errbuf);
+	if (handle == NULL)
+	{
+		std::cout << "Couldn't open device: " << errbuf << std::endl;
+	}
+	else
+	{
+		std::cout << "Device successfully opened" << std::endl;
+	}
+
+	packet = pcap_next(handle, &header);
+	std::cout << "Lenght of packet: " << header.len << std::endl;
+	std::cout << "Time stamp, sec: " << header.ts.tv_sec << std::endl;
+	std::cout << "Time stamp, nsec: " << header.ts.tv_usec << std::endl;
+	pcap_close(handle);
+	pcap_freealldevs(devs);
+	// Close the dialog
 	Close(true);
 }

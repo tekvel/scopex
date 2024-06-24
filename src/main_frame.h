@@ -6,6 +6,7 @@
 #include <pcap.h>
 #include "panels.h"
 #include "threads.h"
+#include <iostream>
 
 class MainFrame : public wxFrame
 {
@@ -45,6 +46,8 @@ private:
     wxChoice *m_choiceBox;
     wxButton *m_buttonOK;
     wxButton *m_buttonCancel;
+
+    pcap_if_t *devs;
 };
 
 enum
