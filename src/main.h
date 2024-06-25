@@ -1,7 +1,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 #include <wx/wx.h>
-#include "wx/thread.h"
+#include <wx/thread.h>
+
+#include "network_interface.h"
+#include "sv_subs_factory.h"
 
 WX_DEFINE_ARRAY_PTR(wxThread *, wxArrayThread);
 
@@ -25,6 +28,10 @@ public:
 
     // indicates that we're shutting down and all threads should exit
     bool m_shuttingDown;
+
+    NIF network_interface;
+
+    SVSubscribe sv_sub;
 };
 
 wxDECLARE_APP(MyApp);

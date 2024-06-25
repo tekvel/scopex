@@ -7,8 +7,6 @@
 #include <cstdint>
 #include <arpa/inet.h>
 
-#include "network_interface.h"
-
 class NetworkSelectionDialog : public wxDialog
 {
 public:
@@ -26,8 +24,6 @@ private:
     wxChoice *m_choiceBox;
     wxButton *m_buttonOK;
     wxButton *m_buttonCancel;
-
-    nif network_interface;
 };
 
 enum

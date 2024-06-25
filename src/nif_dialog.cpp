@@ -55,8 +55,7 @@ NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
 // }
 void NetworkSelectionDialog::InitializeNetworkDevices()
 {
-
-    auto device_list = network_interface.get_device_list(); // This returns a shared_ptr to a vector of strings
+    auto device_list = wxGetApp().network_interface.get_device_list();
     wxArrayString deviceList;
     int i = 0;
 
@@ -85,38 +84,15 @@ void NetworkSelectionDialog::OnOK(wxCommandEvent &event)
 {
     int selectionIndex = m_choiceBox->GetSelection();
 
-    bool nif_selected = network_interface.select_device(selectionIndex - 1);
+    bool nif_selected = wxGetApp().network_interface.select_device(selectionIndex - 1);
 
     if (!nif_selected)
     {
-        wxMessageBox(wxT("Network Interface is not selected!"), wxT("Error"), wxICON_ERROR);
+        wxMessageBox(wxT("Network Interface is not selected!\nTry again."), wxT("Error"), wxICON_ERROR);
     }
     else
     {
         // Close the dialog
         Close(true);
     }
-
-    /*packet = pcap_next(handle, &header);
-    std::cout << "Lenght of packet: " << header.len << std::endl;
-    std::cout << "Time stamp, sec: " << header.ts.tv_sec << std::endl;
-    std::cout << "Time stamp, nsec: " << header.ts.tv_usec << std::endl;
-
-    auto *eth = reinterpret_cast<const ethernet_header *>(packet);
-
-    // Check is frame tagged or not
-    if (ntohs(eth->ether_type) == 0x8100)
-    {
-        std::cout << "Frame is tagged" << std::endl;
-        auto *tag_eth = reinterpret_cast<const tag_ethernet_header *>(packet);
-        std::cout << "VLAN Identifier: 0x" << (ntohs(tag_eth->tci) & 0x0FFF) << std::endl;
-        std::cout << "Priority code point: 0x" << ((ntohs(tag_eth->tci) >> 13) & 0x0007) << std::endl;
-        std::cout << "EtherType: 0x" << std::hex << ntohs(tag_eth->ether_type) << std::endl;
-    }
-    else
-    {
-        std::cout << "Frame is not tagged" << std::endl;
-        std::cout << "EtherType: 0x" << std::hex << ntohs(eth->ether_type) << std::endl;
-    }
-    pcap_close(handle);*/
 }

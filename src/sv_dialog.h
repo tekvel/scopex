@@ -4,6 +4,8 @@
 #include <wx/wx.h>
 #include <iostream>
 
+#include "sv_subs_factory.h"
+
 class SVSelectionDialog : public wxDialog
 {
 public:

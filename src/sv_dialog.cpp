@@ -1,4 +1,5 @@
 #include "sv_dialog.h"
+#include "main.h"
 
 SVSelectionDialog::SVSelectionDialog(const wxString &title)
     : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(550, 350))
@@ -59,7 +60,7 @@ SVSelectionDialog::SVSelectionDialog(const wxString &title)
     panel->Layout();
     vbox1->Fit(panel);
 
-    // Bind(wxEVT_BUTTON, &SVSelectionDialog::OnUpdate, this, wxID_SV_DIALOG_UPDATE); // EVT_UPDATE_SV_DIALOG
+    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnUpdate, this, wxID_SV_DIALOG_UPDATE); // EVT_UPDATE_SV_DIALOG
     Bind(wxEVT_BUTTON, &SVSelectionDialog::OnCancel, this, wxID_SV_DIALOG_CANCEL); // EVT_CANCEL_SV_DIALOG
     Bind(wxEVT_BUTTON, &SVSelectionDialog::OnOK, this, wxID_SV_DIALOG_OK);         // EVT_OK_SV_DIALOG
 
@@ -90,5 +91,17 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
 
         // Close the dialog
         Close(true);
+    }
+}
+
+void SVSelectionDialog::OnUpdate(wxCommandEvent &event)
+{
+    if (wxGetApp().network_interface.get_current_device() == "")
+    {
+        wxMessageBox(wxT("Network Interface is not selected!\n\nFirst, select Network Interface."), wxT("Error"), wxICON_ERROR);
+    }
+    else
+    {
+        auto sv_list = wxGetApp().sv_sub.get_sv_list();
     }
 }
