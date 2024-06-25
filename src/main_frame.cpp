@@ -13,7 +13,8 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_menubar->Append(menuFile, wxT("&File"));
 
 	menuNetwork = new wxMenu;
-	menuNetwork->Append(wxID_NETWORK_DIALOG, wxT("&Select Network"));
+	menuNetwork->Append(wxID_NETWORK_DIALOG, wxT("Select &Network"));
+	menuNetwork->Append(wxID_SV_DIALOG, wxT("Select &SV"));
 	// menuNetwork->Append(THREAD_START_THREAD, wxT("&Thread"));
 	m_menubar->Append(menuNetwork, wxT("&Network Selection"));
 
@@ -22,10 +23,11 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_menubar->Append(menuHelp, wxT("&About"));
 	SetMenuBar(m_menubar);
 
-	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);
-	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);
-	// Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnStartThread, this, THREAD_START_THREAD);
-	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnNetworkSelect, this, wxID_NETWORK_DIALOG);
+	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);					   // EVT_Quit
+	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);				   // EVT_About
+	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnNetworkSelect, this, wxID_NETWORK_DIALOG); // EVT_NIFSelection
+	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSVSelect, this, wxID_SV_DIALOG);		   // EVT_SVSelection
+	// Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnStartThread, this, THREAD_START_THREAD);		// EVT_Start_Thread
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -98,6 +100,14 @@ void MainFrame::OnStartThread(wxCommandEvent &event)
 void MainFrame::OnNetworkSelect(wxCommandEvent &event)
 {
 	NetworkSelectionDialog *dialog = new NetworkSelectionDialog("Network Selection Dialog");
+	// dialog->Show();
+	dialog->ShowModal();
+	dialog->Destroy();
+}
+
+void MainFrame::OnSVSelect(wxCommandEvent &event)
+{
+	SVSelectionDialog *dialog = new SVSelectionDialog("SV Selection Dialog");
 	// dialog->Show();
 	dialog->ShowModal();
 	dialog->Destroy();

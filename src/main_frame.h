@@ -3,9 +3,12 @@
 
 #include <wx/wxprec.h>
 #include <wx/menu.h>
+
 #include "panels.h"
 #include "threads.h"
+// Dialog windows
 #include "nif_dialog.h"
+#include "sv_dialog.h"
 
 class MainFrame : public wxFrame
 {
@@ -26,12 +29,14 @@ public:
     void OnAbout(wxCommandEvent &event);
     void OnStartThread(wxCommandEvent &event);
     void OnNetworkSelect(wxCommandEvent &event);
+    void OnSVSelect(wxCommandEvent &event);
 };
 
 enum
 {
     THREAD_START_THREAD = 201,
     wxID_NETWORK_DIALOG,
+    wxID_SV_DIALOG,
 };
 
 #endif

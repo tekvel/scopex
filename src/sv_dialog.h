@@ -1,0 +1,36 @@
+#ifndef SV_DIALOG_H
+#define SV_DIALOG_H
+
+#include <wx/wx.h>
+#include <iostream>
+
+class SVSelectionDialog : public wxDialog
+{
+public:
+    SVSelectionDialog(const wxString &title);
+    ~SVSelectionDialog();
+
+private:
+    void OnOK(wxCommandEvent &event);
+    void OnCancel(wxCommandEvent &event);
+    void OnUpdate(wxCommandEvent &event);
+
+    wxPanel *m_upPanel;
+    wxPanel *m_panel1;
+    wxStaticText *m_text1;
+    wxButton *m_buttonUpdate;
+    wxListBox *m_listBox1;
+    wxPanel *m_downPpanel;
+    wxButton *m_buttonCancel;
+    wxButton *m_buttonOK;
+};
+
+enum
+{
+    wxID_SV_DIALOG_OK = 401,
+    wxID_SV_DIALOG_CANCEL,
+    wxID_SV_DIALOG_UPDATE,
+
+};
+
+#endif

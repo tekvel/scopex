@@ -25,13 +25,11 @@ NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
     m_downPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     wxGridSizer *gsizer = new wxGridSizer(0, 2, 0, 0);
 
-    m_buttonCancel = new wxButton(m_downPanel, wxID_DIALOG_CANCEL, wxT("Cancel"), wxPoint(300, 250), wxDefaultSize, 0);
+    m_buttonCancel = new wxButton(m_downPanel, wxID_NIF_DIALOG_CANCEL, wxT("Cancel"), wxPoint(300, 250), wxDefaultSize, 0);
     gsizer->Add(m_buttonCancel, 0, wxALIGN_CENTER | wxALL, 5);
-    Bind(wxEVT_BUTTON, &NetworkSelectionDialog::OnCancel, this, wxID_DIALOG_CANCEL);
 
-    m_buttonOK = new wxButton(m_downPanel, wxID_DIALOG_OK, wxT("OK"), wxPoint(300, 450), wxDefaultSize, 0);
+    m_buttonOK = new wxButton(m_downPanel, wxID_NIF_DIALOG_OK, wxT("OK"), wxPoint(300, 450), wxDefaultSize, 0);
     gsizer->Add(m_buttonOK, 0, wxALIGN_CENTER | wxALL, 5);
-    Bind(wxEVT_BUTTON, &NetworkSelectionDialog::OnOK, this, wxID_DIALOG_OK);
 
     m_downPanel->SetSizer(gsizer);
     m_downPanel->Layout();
@@ -41,6 +39,9 @@ NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
     panel->SetSizer(vbox1);
     panel->Layout();
     vbox1->Fit(panel);
+
+    Bind(wxEVT_BUTTON, &NetworkSelectionDialog::OnCancel, this, wxID_NIF_DIALOG_CANCEL); // EVT_CANCEL_NIF_DIALOG
+    Bind(wxEVT_BUTTON, &NetworkSelectionDialog::OnOK, this, wxID_NIF_DIALOG_OK);         // EVT_OK_NIF_DIALOG
 
     InitializeNetworkDevices();
 
@@ -84,7 +85,17 @@ void NetworkSelectionDialog::OnOK(wxCommandEvent &event)
 {
     int selectionIndex = m_choiceBox->GetSelection();
 
-    network_interface.select_device(selectionIndex - 1);
+    bool nif_selected = network_interface.select_device(selectionIndex - 1);
+
+    if (!nif_selected)
+    {
+        wxMessageBox(wxT("Network Interface is not selected!"), wxT("Error"), wxICON_ERROR);
+    }
+    else
+    {
+        // Close the dialog
+        Close(true);
+    }
 
     /*packet = pcap_next(handle, &header);
     std::cout << "Lenght of packet: " << header.len << std::endl;
@@ -108,7 +119,4 @@ void NetworkSelectionDialog::OnOK(wxCommandEvent &event)
         std::cout << "EtherType: 0x" << std::hex << ntohs(eth->ether_type) << std::endl;
     }
     pcap_close(handle);*/
-
-    // Close the dialog
-    Close(true);
 }

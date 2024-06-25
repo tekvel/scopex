@@ -13,7 +13,7 @@ class NetworkSelectionDialog : public wxDialog
 {
 public:
     NetworkSelectionDialog(const wxString &title);
-    // virtual ~NetworkSelectionDialog();
+    //~NetworkSelectionDialog();
 
 private:
     void InitializeNetworkDevices();
@@ -32,8 +32,8 @@ private:
 
 enum
 {
-    wxID_DIALOG_OK = 301,
-    wxID_DIALOG_CANCEL = 302,
+    wxID_NIF_DIALOG_OK = 301,
+    wxID_NIF_DIALOG_CANCEL,
 
 };
 
