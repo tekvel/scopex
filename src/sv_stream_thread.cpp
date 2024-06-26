@@ -27,6 +27,17 @@ wxThread::ExitCode SVSearchThread::Entry()
 {
     SetName("SV Searching Thread");
 
+    // check if the application is shutting down
+    {
+        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+        if (wxGetApp().m_shuttingDown)
+            return NULL;
+    }
+
+    // // check if just this thread was asked to exit
+    // if (TestDestroy())
+    //     break;
+
     // char filter_exp[] = "ether proto 0x0800";
     // char filter_exp[] = "arp";
     // char filter_exp[] = "ether proto 0x88ba";
@@ -34,7 +45,7 @@ wxThread::ExitCode SVSearchThread::Entry()
 
     wxGetApp().network_interface.sniff_traffic(10, filter_exp, 100);
 
-    wxThread::Sleep(2000);
+    wxThread::Sleep(5000);
     std::cout << "\nHello from thread" << std::endl;
 
     return NULL;

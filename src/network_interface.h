@@ -50,12 +50,11 @@ private:
 
     char errbuf[PCAP_ERRBUF_SIZE]; // Error buffer
     struct bpf_program fp;         // The compiled filter
-    // char filter_exp;               // The filter expression
-    bpf_u_int32 netp;          // network address
-    bpf_u_int32 maskp;         // network mask
-    pcap_t *handle;            // Session handle
-    struct pcap_pkthdr header; // The header that pcap gives us
-    const u_char *packet;      // The actual packet
+    bpf_u_int32 netp;              // network address
+    bpf_u_int32 maskp;             // network mask
+    pcap_t *handle;                // Session handle
+    struct pcap_pkthdr header;     // The header that pcap gives us
+    const u_char *packet;          // The actual packet
 };
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);

@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "sv_subs_factory.h"
+#include "sv_stream_list.h"
 
 class SVSelectionDialog : public wxDialog
 {
@@ -21,7 +22,7 @@ private:
     wxPanel *m_panel1;
     wxStaticText *m_text1;
     wxButton *m_buttonUpdate;
-    wxListBox *m_listBox1;
+    SVStreamList *m_svStreamList;
     wxPanel *m_downPpanel;
     wxButton *m_buttonCancel;
     wxButton *m_buttonOK;

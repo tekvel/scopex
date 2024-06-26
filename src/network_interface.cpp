@@ -147,8 +147,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
     auto *eth = reinterpret_cast<const ethernet_header *>(packet);
 
-    // std::cout << "Destination MAC: " <<
-
     std::cout << "Destination MAC: "
               << std::hex << std::setw(2) << std::setfill('0')
               << (int)eth->ether_dhost[0] << ":" << (int)eth->ether_dhost[1] << ":"

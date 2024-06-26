@@ -4,7 +4,6 @@
 #include <wx/wx.h>
 
 #include <iostream>
-#include <cstdint>
 #include <arpa/inet.h>
 
 class NetworkSelectionDialog : public wxDialog

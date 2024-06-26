@@ -25,16 +25,15 @@ SVSelectionDialog::SVSelectionDialog(const wxString &title)
     hbox->Fit(m_panel1);
     vbox2->Add(m_panel1, 1, wxEXPAND | wxALL, 5);
 
-    m_listBox1 = new wxListBox(m_upPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED | wxLB_SORT);
-    m_listBox1->Append(_("var1"));
-    m_listBox1->Append(_("var2"));
-    m_listBox1->Append(_("var3"));
-    m_listBox1->Append(_("var4"));
-    m_listBox1->Append(_("var5"));
-    m_listBox1->Append(_("var0"));
-    m_listBox1->Append(_("var6"));
-    m_listBox1->Append(_("var7"));
-    vbox2->Add(m_listBox1, 3, wxALL | wxEXPAND, 5);
+    m_svStreamList = new SVStreamList(m_upPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxString source = "00:11:22:33:44:55";
+    wxString destination = "66:77:88:99:AA:BB";
+    bool tagged = true;
+    wxString protocol = "IPv4";
+    m_svStreamList->AddStream(source, destination, tagged, protocol);
+    m_svStreamList->AddStream(source, destination, tagged, protocol);
+    m_svStreamList->AddStream(source, destination, tagged, protocol);
+    vbox2->Add(m_svStreamList, 3, wxALL | wxEXPAND, 5);
 
     m_upPanel->SetSizer(vbox2);
     m_upPanel->Layout();
@@ -73,14 +72,20 @@ SVSelectionDialog::~SVSelectionDialog()
 
 void SVSelectionDialog::OnCancel(wxCommandEvent &event)
 {
+    // Close the dialog
     Close(true);
 }
 
 void SVSelectionDialog::OnOK(wxCommandEvent &event)
 {
-    int n;
-    wxArrayInt selected_SV;
-    n = m_listBox1->GetSelections(selected_SV);
+    wxArrayInt selectedItems;
+    long item = -1;
+    while ((item = m_svStreamList->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
+    {
+        selectedItems.Add(item);
+    }
+
+    int n = selectedItems.GetCount();
     if (n == 0)
     {
         wxMessageBox(wxT("SV Stream is not selected!"), wxT("Error!"), wxICON_ERROR);
@@ -88,6 +93,18 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
     else
     {
         std::cout << "Number of selected items: " << n << std::endl;
+
+        // Optionally, you can retrieve more details about each selected item
+        for (int i = 0; i < n; ++i)
+        {
+            long index = selectedItems[i];
+            wxString source = m_svStreamList->GetItemText(index);
+            wxString destination = m_svStreamList->GetItemText(index, 1);
+            wxString tagged = m_svStreamList->GetItemText(index, 2);
+            wxString protocol = m_svStreamList->GetItemText(index, 3);
+
+            std::cout << "Selected Item " << i << ": " << source << ", " << destination << ", " << tagged << ", " << protocol << std::endl;
+        }
 
         // Close the dialog
         Close(true);
