@@ -27,9 +27,15 @@ wxThread::ExitCode SVSearchThread::Entry()
 {
     SetName("SV Searching Thread");
 
-    wxGetApp().network_interface.sniff_traffic(10, nullptr);
+    // char filter_exp[] = "ether proto 0x0800";
+    // char filter_exp[] = "arp";
+    // char filter_exp[] = "ether proto 0x88ba";
+    char filter_exp[] = "";
 
-    wxThread::Sleep(1500);
+    wxGetApp().network_interface.sniff_traffic(10, filter_exp, 100);
+
+    wxThread::Sleep(2000);
+    std::cout << "\nHello from thread" << std::endl;
 
     return NULL;
 }

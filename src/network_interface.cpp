@@ -84,7 +84,7 @@ std::string NIF::get_current_device()
     }
 }
 
-void NIF::sniff_traffic(int n_packets, char *filter_exp)
+void NIF::sniff_traffic(int n_packets, char *filter_exp, int timeout_ms)
 {
     // Compile the filter expression
     if (pcap_compile(handle, &fp, filter_exp, 0, netp) == -1)
@@ -99,29 +99,67 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp)
         return;
     }
 
-    // Start capturing packets
-    pcap_loop(handle, n_packets, got_packet, NULL);
+    auto start = std::chrono::steady_clock::now();
+    int packet_count = 0;
+    // Start capturing packets with timeout
+    while (packet_count < n_packets)
+    {
+        int result = pcap_dispatch(handle, n_packets - packet_count, got_packet, nullptr);
+
+        if (result > 0)
+        {
+            packet_count += result;
+        }
+        else if (result == 0)
+        {
+
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+
+            std::cout << "Elapsed time: " << elapsed << " ms" << std::endl;
+
+            if (elapsed >= timeout_ms)
+            {
+                std::cerr << "Timeout: No packets captured within the specified timeout period of " << timeout_ms << " ms." << std::endl;
+                return;
+            }
+
+            // Busy-wait loop to simulate delay of 20 ms
+            auto wait_start = std::chrono::steady_clock::now();
+            while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wait_start).count() < 20)
+            {
+                // Busy-wait
+            }
+        }
+        else
+        {
+            std::cerr << "Error in pcap_dispatch: " << pcap_geterr(handle) << std::endl;
+            return;
+        }
+    }
 }
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-    std::cout << "Length of packet: " << header->len << std::endl;
-    std::cout << "Timestamp, sec: " << header->ts.tv_sec << std::endl;
-    std::cout << "Timestamp, usec: " << header->ts.tv_usec << std::endl;
+    std::cout << "Length of packet: " << std::dec << header->len << std::endl;
+    std::cout << "Timestamp, sec: " << std::dec << header->ts.tv_sec << std::endl;
+    std::cout << "Timestamp, usec: " << std::dec << header->ts.tv_usec << std::endl;
 
     auto *eth = reinterpret_cast<const ethernet_header *>(packet);
 
-    // std::cout << "Destination MAC: "
-    //           << std::hex << std::setw(2) << std::setfill('0')
-    //           << (int)eth->ether_dhost[0] << ":" << (int)eth->ether_dhost[1] << ":"
-    //           << (int)eth->ether_dhost[2] << ":" << (int)eth->ether_dhost[3] << ":"
-    //           << (int)eth->ether_dhost[4] << ":" << (int)eth->ether_dhost[5] << std::endl;
+    // std::cout << "Destination MAC: " <<
 
-    // std::cout << "Source MAC: "
-    //           << std::hex << std::setw(2) << std::setfill('0')
-    //           << (int)eth->ether_shost[0] << ":" << (int)eth->ether_shost[1] << ":"
-    //           << (int)eth->ether_shost[2] << ":" << (int)eth->ether_shost[3] << ":"
-    //           << (int)eth->ether_shost[4] << ":" << (int)eth->ether_shost[5] << std::endl;
+    std::cout << "Destination MAC: "
+              << std::hex << std::setw(2) << std::setfill('0')
+              << (int)eth->ether_dhost[0] << ":" << (int)eth->ether_dhost[1] << ":"
+              << (int)eth->ether_dhost[2] << ":" << (int)eth->ether_dhost[3] << ":"
+              << (int)eth->ether_dhost[4] << ":" << (int)eth->ether_dhost[5] << std::endl;
+
+    std::cout << "Source MAC: "
+              << std::hex << std::setw(2) << std::setfill('0')
+              << (int)eth->ether_shost[0] << ":" << (int)eth->ether_shost[1] << ":"
+              << (int)eth->ether_shost[2] << ":" << (int)eth->ether_shost[3] << ":"
+              << (int)eth->ether_shost[4] << ":" << (int)eth->ether_shost[5] << std::endl;
 
     // Check if the frame is tagged
     if (ntohs(eth->ether_type) == 0x8100)

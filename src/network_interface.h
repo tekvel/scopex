@@ -3,10 +3,14 @@
 
 #include <pcap.h>
 #include <arpa/inet.h>
+
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <memory>
+#include <chrono>
+#include <thread>
 
 #define ETHER_ADDR_LEN 6
 
@@ -37,7 +41,7 @@ public:
     std::shared_ptr<std::vector<std::string>> get_device_list();
     bool select_device(int id);
     std::string get_current_device();
-    void sniff_traffic(int n_packets, char *filter_exp);
+    void sniff_traffic(int n_packets, char *filter_exp, int timeout_ms);
 
 private:
     std::shared_ptr<std::vector<std::string>> device_list;
