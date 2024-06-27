@@ -1,8 +1,8 @@
 #include "sv_dialog.h"
 #include "main.h"
 
-SVSelectionDialog::SVSelectionDialog(const wxString &title)
-    : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(550, 350))
+SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
+    : wxDialog(parent, -1, title, wxDefaultPosition, wxSize(550, 350))
 {
     wxPanel *panel = new wxPanel(this, -1);
     wxBoxSizer *vbox1 = new wxBoxSizer(wxVERTICAL);
@@ -26,13 +26,6 @@ SVSelectionDialog::SVSelectionDialog(const wxString &title)
     vbox2->Add(m_panel1, 1, wxEXPAND | wxALL, 5);
 
     m_svStreamList = new SVStreamList(m_upPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    wxString source = "00:11:22:33:44:55";
-    wxString destination = "66:77:88:99:AA:BB";
-    bool tagged = true;
-    wxString protocol = "IPv4";
-    m_svStreamList->AddStream(source, destination, tagged, protocol);
-    m_svStreamList->AddStream(source, destination, tagged, protocol);
-    m_svStreamList->AddStream(source, destination, tagged, protocol);
     vbox2->Add(m_svStreamList, 3, wxALL | wxEXPAND, 5);
 
     m_upPanel->SetSizer(vbox2);
@@ -51,7 +44,7 @@ SVSelectionDialog::SVSelectionDialog(const wxString &title)
     gsizer->Add(m_buttonOK, 0, wxALIGN_CENTER | wxALL, 5);
 
     m_downPpanel->SetSizer(gsizer);
-    m_downPpanel->Layout();
+    m_downPpanel->Layout(); // MainFrame *mainFrame = wxGetApp().GetMainFrame();
     gsizer->Fit(m_downPpanel);
     vbox1->Add(m_downPpanel, 1, wxEXPAND | wxALL, 5);
 
@@ -59,9 +52,10 @@ SVSelectionDialog::SVSelectionDialog(const wxString &title)
     panel->Layout();
     vbox1->Fit(panel);
 
-    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnUpdate, this, wxID_SV_DIALOG_UPDATE); // EVT_UPDATE_SV_DIALOG
-    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnCancel, this, wxID_SV_DIALOG_CANCEL); // EVT_CANCEL_SV_DIALOG
-    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnOK, this, wxID_SV_DIALOG_OK);         // EVT_OK_SV_DIALOG
+    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnUpdate, this, wxID_SV_DIALOG_UPDATE);             // EVT_UPDATE_SV_DIALOG
+    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnCancel, this, wxID_SV_DIALOG_CANCEL);             // EVT_CANCEL_SV_DIALOG
+    Bind(wxEVT_BUTTON, &SVSelectionDialog::OnOK, this, wxID_SV_DIALOG_OK);                     // EVT_OK_SV_DIALOG
+    Bind(wxEVT_THREAD, &SVSelectionDialog::OnSearchComplete, this, wxID_EVT_SEARCH_COMPLETED); // EVT_SV_SEARCH_IS_COMPLETED
 
     Centre();
 }
@@ -116,9 +110,44 @@ void SVSelectionDialog::OnUpdate(wxCommandEvent &event)
     if (wxGetApp().network_interface.get_current_device() == "")
     {
         wxMessageBox(wxT("Network Interface is not selected!\n\nFirst, select Network Interface."), wxT("Error"), wxICON_ERROR);
+        return;
     }
-    else
+    m_buttonUpdate->Enable(false);
+    if (wxGetApp().sv_sub.get_sv_list() == nullptr)
     {
-        auto sv_list = wxGetApp().sv_sub.get_sv_list();
+        std::cerr << "Problem in starting SV Searching Thread!" << std::endl;
+        return;
+    }
+}
+
+void SVSelectionDialog::OnSearchComplete(wxThreadEvent &event)
+{
+    // std::cout << "yeah, event is working!!!" << std::endl;
+    m_buttonUpdate->Enable(true);
+
+    // Clear Current Items
+    m_svStreamList->DeleteAllItems();
+
+    auto sv_list = wxGetApp().sv_sub.sv_list;
+
+    for (const auto &stream : *sv_list)
+    {
+        wxString source;
+        wxString destination;
+
+        for (int i = 0; i < ETHER_ADDR_LEN; ++i)
+        {
+            source += wxString::Format("%02x", stream.ether_shost[i]);
+            if (i < ETHER_ADDR_LEN - 1)
+                source += ":";
+            destination += wxString::Format("%02x", stream.ether_dhost[i]);
+            if (i < ETHER_ADDR_LEN - 1)
+                destination += ":";
+        }
+
+        bool tagged = stream.tagged;
+        wxString protocol = wxString::Format("0x%04x", stream.ether_type);
+
+        m_svStreamList->AddStream(source, destination, tagged, protocol);
     }
 }

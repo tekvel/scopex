@@ -10,13 +10,14 @@
 class SVSelectionDialog : public wxDialog
 {
 public:
-    SVSelectionDialog(const wxString &title);
+    SVSelectionDialog(wxWindow *parent, const wxString &title);
     ~SVSelectionDialog();
 
 private:
     void OnOK(wxCommandEvent &event);
     void OnCancel(wxCommandEvent &event);
     void OnUpdate(wxCommandEvent &event);
+    void OnSearchComplete(wxThreadEvent &event);
 
     wxPanel *m_upPanel;
     wxPanel *m_panel1;
@@ -33,7 +34,7 @@ enum
     wxID_SV_DIALOG_OK = 401,
     wxID_SV_DIALOG_CANCEL,
     wxID_SV_DIALOG_UPDATE,
-
+    wxID_EVT_SEARCH_COMPLETED,
 };
 
 #endif

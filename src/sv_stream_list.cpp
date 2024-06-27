@@ -8,9 +8,9 @@ SVStreamList::SVStreamList(wxWindow *parent, wxWindowID id, const wxPoint &pos, 
 
 void SVStreamList::InitList()
 {
-    AppendColumn("Source", wxLIST_FORMAT_LEFT, 100);
-    AppendColumn("Destination", wxLIST_FORMAT_LEFT, 100);
-    AppendColumn("Tagged", wxLIST_FORMAT_LEFT, 70);
+    AppendColumn("Source", wxLIST_FORMAT_LEFT, 150);
+    AppendColumn("Destination", wxLIST_FORMAT_LEFT, 150);
+    AppendColumn("Tagged", wxLIST_FORMAT_LEFT, 100);
     AppendColumn("Protocol", wxLIST_FORMAT_LEFT, 100);
 }
 

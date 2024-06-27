@@ -5,6 +5,7 @@
 #include <wx/thread.h>
 
 #include "network_interface.h"
+#include "sv_dialog.h"
 
 class SVSearchThread : public wxThread
 {

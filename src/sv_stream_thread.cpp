@@ -27,26 +27,34 @@ wxThread::ExitCode SVSearchThread::Entry()
 {
     SetName("SV Searching Thread");
 
-    // check if the application is shutting down
+    std::cout << "SV Search Thread started" << std::endl;
+
+    for (int i = 0; i != 5; ++i)
     {
-        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
-        if (wxGetApp().m_shuttingDown)
-            return NULL;
+        {
+            wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+            if (wxGetApp().m_shuttingDown)
+                return NULL;
+        }
+        if (TestDestroy())
+            break;
+
+        // char filter_exp[] = "ether proto 0x0800";
+        // char filter_exp[] = "arp";
+        // char filter_exp[] = "ether proto 0x88ba";
+        char filter_exp[] = "";
+        wxThread::Sleep(10);
+        wxGetApp().network_interface.sniff_traffic(10, filter_exp, 100);
     }
 
-    // // check if just this thread was asked to exit
-    // if (TestDestroy())
-    //     break;
-
-    // char filter_exp[] = "ether proto 0x0800";
-    // char filter_exp[] = "arp";
-    // char filter_exp[] = "ether proto 0x88ba";
-    char filter_exp[] = "";
-
-    wxGetApp().network_interface.sniff_traffic(10, filter_exp, 100);
-
-    wxThread::Sleep(5000);
+    // wxThread::Sleep(2000);
     std::cout << "\nHello from thread" << std::endl;
 
-    return NULL;
+    // wxThreadEvent *event = new wxThreadEvent(EVT_SV_SEARCH_COMPLETE, wxIDaaa);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_SEARCH_COMPLETED);
+    wxQueueEvent(wxGetApp().GetMainFrame()->SV_dialog, event);
+
+    std::cout << "Number of streams: " << wxGetApp().sv_sub.sv_list->size() << std::endl;
+
+    return (wxThread::ExitCode)NULL;
 }

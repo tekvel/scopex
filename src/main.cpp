@@ -13,7 +13,7 @@ bool MyApp::OnInit()
     if (!wxApp::OnInit())
         return false;
 
-    MainFrame *frame = new MainFrame(nullptr, wxID_ANY, wxT("Scopex"));
+    frame = new MainFrame(nullptr, wxID_ANY, wxT("Scopex"));
     frame->Show(true);
 
     return true;

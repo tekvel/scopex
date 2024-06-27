@@ -1,7 +1,7 @@
 #include "sv_subs_factory.h"
 #include "main.h"
 
-std::shared_ptr<std::vector<SV_stream>> SVSubscribe::get_sv_list()
+std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubscribe::get_sv_list()
 {
     SVSearchThread *thread = new SVSearchThread;
     if (thread->Create() != wxTHREAD_NO_ERROR)
@@ -17,5 +17,5 @@ std::shared_ptr<std::vector<SV_stream>> SVSubscribe::get_sv_list()
         return nullptr;
     }
 
-    return nullptr;
+    return sv_list;
 }

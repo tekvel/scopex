@@ -12,6 +12,8 @@
 #include <chrono>
 #include <thread>
 
+#include "sv_subs_factory.h"
+
 #define ETHER_ADDR_LEN 6
 
 /* Ethernet header */
@@ -58,5 +60,6 @@ private:
 };
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 #endif // NETWORK_INTERFACE_H

@@ -25,6 +25,9 @@ public:
     wxMenu *menuHelp;
     wxMenu *menuNetwork;
 
+    NetworkSelectionDialog *NIF_dialog;
+    SVSelectionDialog *SV_dialog;
+
     void OnQuit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnStartThread(wxCommandEvent &event);

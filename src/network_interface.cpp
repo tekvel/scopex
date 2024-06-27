@@ -1,4 +1,5 @@
 #include "network_interface.h"
+#include "main.h"
 
 NIF::~NIF()
 {
@@ -104,7 +105,7 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, int timeout_ms)
     // Start capturing packets with timeout
     while (packet_count < n_packets)
     {
-        int result = pcap_dispatch(handle, n_packets - packet_count, got_packet, nullptr);
+        int result = pcap_dispatch(handle, n_packets - packet_count, parse_sv_streams, nullptr);
 
         if (result > 0)
         {
@@ -173,4 +174,28 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         std::cout << "Frame is not tagged" << std::endl;
         std::cout << "EtherType: 0x" << std::hex << ntohs(eth->ether_type) << std::endl;
     }
+}
+
+void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+{
+    auto *eth = reinterpret_cast<const ethernet_header *>(packet);
+
+    SV_stream stream;
+
+    std::copy(std::begin(eth->ether_dhost), std::end(eth->ether_dhost), std::begin(stream.ether_dhost));
+    std::copy(std::begin(eth->ether_shost), std::end(eth->ether_shost), std::begin(stream.ether_shost));
+
+    if (ntohs(eth->ether_type) == 0x8100)
+    {
+        stream.tagged = true;
+        auto *tag_eth = reinterpret_cast<const tag_ethernet_header *>(packet);
+        stream.ether_type = ntohs(tag_eth->ether_type);
+    }
+    else
+    {
+        stream.tagged = false;
+        stream.ether_type = ntohs(eth->ether_type);
+    }
+
+    wxGetApp().sv_sub.sv_list->insert(stream);
 }

@@ -27,7 +27,6 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);				   // EVT_About
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnNetworkSelect, this, wxID_NETWORK_DIALOG); // EVT_NIFSelection
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSVSelect, this, wxID_SV_DIALOG);		   // EVT_SVSelection
-	// Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnStartThread, this, THREAD_START_THREAD);		// EVT_Start_Thread
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -82,33 +81,18 @@ void MainFrame::OnAbout(wxCommandEvent &event)
 	dialog.ShowModal();
 }
 
-void MainFrame::OnStartThread(wxCommandEvent &event)
-{
-	MyThread *thread = new MyThread;
-	if (thread->Create() != wxTHREAD_NO_ERROR)
-	{
-		wxLogError("Can't create thread!");
-	}
-	wxCriticalSectionLocker enter(wxGetApp().m_critsect);
-	wxGetApp().m_threads.Add(thread);
-	if (thread->Run() != wxTHREAD_NO_ERROR)
-	{
-		wxLogError("Can't start thread!");
-	}
-}
-
 void MainFrame::OnNetworkSelect(wxCommandEvent &event)
 {
-	NetworkSelectionDialog *dialog = new NetworkSelectionDialog("Network Selection Dialog");
-	// dialog->Show();
-	dialog->ShowModal();
-	dialog->Destroy();
+	NIF_dialog = new NetworkSelectionDialog("Network Selection Dialog");
+	// NIF_dialog->Show();
+	NIF_dialog->ShowModal();
+	NIF_dialog->Destroy();
 }
 
 void MainFrame::OnSVSelect(wxCommandEvent &event)
 {
-	SVSelectionDialog *dialog = new SVSelectionDialog("SV Selection Dialog");
-	// dialog->Show();
-	dialog->ShowModal();
-	dialog->Destroy();
+	SV_dialog = new SVSelectionDialog(this, "SV Selection Dialog");
+	// SV_dialog->Show();
+	SV_dialog->ShowModal();
+	SV_dialog->Destroy();
 }

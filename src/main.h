@@ -3,6 +3,7 @@
 #include <wx/wx.h>
 #include <wx/thread.h>
 
+#include "main_frame.h"
 #include "network_interface.h"
 #include "sv_subs_factory.h"
 
@@ -32,6 +33,11 @@ public:
     NIF network_interface;
 
     SVSubscribe sv_sub;
+
+    MainFrame *GetMainFrame() { return frame; }
+
+private:
+    MainFrame *frame;
 };
 
 wxDECLARE_APP(MyApp);
