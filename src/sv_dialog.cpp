@@ -58,6 +58,11 @@ SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
     Bind(wxEVT_THREAD, &SVSelectionDialog::OnSearchComplete, this, wxID_EVT_SEARCH_COMPLETED); // EVT_SV_SEARCH_IS_COMPLETED
 
     Centre();
+
+    if (wxGetApp().sv_sub.sv_list->size() != 0)
+    {
+        UpdateSVList();
+    }
 }
 
 SVSelectionDialog::~SVSelectionDialog()
@@ -92,7 +97,7 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
         for (int i = 0; i < n; ++i)
         {
             long index = selectedItems[i];
-            wxString source = m_svStreamList->GetItemText(index);
+            wxString source = m_svStreamList->GetItemText(index, 0);
             wxString destination = m_svStreamList->GetItemText(index, 1);
             wxString tagged = m_svStreamList->GetItemText(index, 2);
             wxString protocol = m_svStreamList->GetItemText(index, 3);
@@ -125,6 +130,11 @@ void SVSelectionDialog::OnSearchComplete(wxThreadEvent &event)
     // std::cout << "yeah, event is working!!!" << std::endl;
     m_buttonUpdate->Enable(true);
 
+    UpdateSVList();
+}
+
+void SVSelectionDialog::UpdateSVList()
+{
     // Clear Current Items
     m_svStreamList->DeleteAllItems();
 

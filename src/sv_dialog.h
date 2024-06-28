@@ -19,6 +19,8 @@ private:
     void OnUpdate(wxCommandEvent &event);
     void OnSearchComplete(wxThreadEvent &event);
 
+    void UpdateSVList();
+
     wxPanel *m_upPanel;
     wxPanel *m_panel1;
     wxStaticText *m_text1;
