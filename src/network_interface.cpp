@@ -85,7 +85,7 @@ std::string NIF::get_current_device()
     }
 }
 
-void NIF::sniff_traffic(int n_packets, char *filter_exp, int timeout_ms)
+void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms)
 {
     // Compile the filter expression
     if (pcap_compile(handle, &fp, filter_exp, 0, netp) == -1)
@@ -100,12 +100,27 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, int timeout_ms)
         return;
     }
 
+    pcap_handler callback_fn;
+    if (callback == "parse_sv_streams")
+    {
+        callback_fn = parse_sv_streams;
+    }
+    else if (callback == "got_packet")
+    {
+        callback_fn = got_packet;
+    }
+    else
+    {
+        std::cerr << "Couldn't determine callback function" << std::endl;
+        return;
+    }
+
     auto start = std::chrono::steady_clock::now();
     int packet_count = 0;
     // Start capturing packets with timeout
     while (packet_count < n_packets)
     {
-        int result = pcap_dispatch(handle, n_packets - packet_count, parse_sv_streams, nullptr);
+        int result = pcap_dispatch(handle, n_packets - packet_count, callback_fn, nullptr);
 
         if (result > 0)
         {

@@ -44,7 +44,7 @@ wxThread::ExitCode SVSearchThread::Entry()
         // char filter_exp[] = "ether proto 0x88ba";
         char filter_exp[] = "";
         wxThread::Sleep(10);
-        wxGetApp().network_interface.sniff_traffic(10, filter_exp, 100);
+        wxGetApp().network_interface.sniff_traffic(10, filter_exp, "parse_sv_streams", 100);
     }
 
     // wxThread::Sleep(2000);

@@ -78,11 +78,15 @@ void SVSelectionDialog::OnCancel(wxCommandEvent &event)
 void SVSelectionDialog::OnOK(wxCommandEvent &event)
 {
     wxArrayInt selectedItems;
+    std::vector<long> *selectedSV = new std::vector<long>;
     long item = -1;
     while ((item = m_svStreamList->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
     {
         selectedItems.Add(item);
+        selectedSV->push_back(item);
     }
+
+    wxGetApp().sv_sub.select_sv_streams(selectedSV);
 
     int n = selectedItems.GetCount();
     if (n == 0)
@@ -93,16 +97,14 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
     {
         std::cout << "Number of selected items: " << n << std::endl;
 
-        // Optionally, you can retrieve more details about each selected item
-        for (int i = 0; i < n; ++i)
+        for (const auto &index : selectedItems)
         {
-            long index = selectedItems[i];
             wxString source = m_svStreamList->GetItemText(index, 0);
             wxString destination = m_svStreamList->GetItemText(index, 1);
             wxString tagged = m_svStreamList->GetItemText(index, 2);
             wxString protocol = m_svStreamList->GetItemText(index, 3);
 
-            std::cout << "Selected Item " << i << ": " << source << ", " << destination << ", " << tagged << ", " << protocol << std::endl;
+            std::cout << "Selected Item " << index << ": " << source << ", " << destination << ", " << tagged << ", " << protocol << std::endl;
         }
 
         // Close the dialog
