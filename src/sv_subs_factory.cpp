@@ -19,3 +19,8 @@ std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubs
 
     return sv_list;
 }
+
+void SVSubscribe::delete_sv_streams()
+{
+    sv_list->clear();
+}

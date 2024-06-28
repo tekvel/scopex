@@ -59,6 +59,7 @@ public:
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> get_sv_list();
     void select_sv_streams(std::vector<int> ids);
+    void delete_sv_streams();
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list;
 
