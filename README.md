@@ -26,7 +26,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/wxWigets_lib/wxWidgets-3.2.x ..
 ```
 Running:
 ```bash
-./build/prog
+sudo ./build/prog
 ```
 
 ---
@@ -35,7 +35,7 @@ Running:
 ### Roadmap
 
 - [x] Graphical panels for drawing signals
-- [ ] The ability to select a network interface
+- [x] The ability to select a network interface
 - [ ] The ability to subscribe to various SV streams
 - [ ] SV parser
 - [ ] The ability to determine signal parameters
