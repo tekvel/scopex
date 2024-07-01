@@ -7,7 +7,9 @@ NIF::~NIF()
     {
         pcap_freealldevs(devs);
         pcap_freecode(&fp);
-        pcap_close(handle);
+        if (handle != NULL){
+            pcap_close(handle);
+        }
         devs = nullptr;
     }
 }
