@@ -16,13 +16,13 @@ Building:
 git clone https://github.com/tekvel/scopex.git
 mkdir build
 cd build
-cmake ..
+cmake  -DCMAKE_BUILD_TYPE=Release ..
 cd ..
 cmake --build build
 ```
 If wxWidgets has not been installed in the system specify path to wxWidgets build directory when configuring the project for building:
 ```bash
-cmake -DCMAKE_PREFIX_PATH=/path/to/wxWigets_lib/wxWidgets-3.2.x ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/wxWigets_lib/wxWidgets-3.2.x ..
 ```
 Running:
 ```bash
@@ -36,7 +36,7 @@ sudo ./build/prog
 
 - [x] Graphical panels for drawing signals
 - [x] The ability to select a network interface
-- [ ] The ability to subscribe to various SV streams
 - [ ] SV parser
+- [ ] The ability to subscribe to various SV streams
 - [ ] The ability to determine signal parameters
 - [ ] The ability to upload/download signals
