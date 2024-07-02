@@ -41,13 +41,13 @@ wxThread::ExitCode SVSearchThread::Entry()
 
         // char filter_exp[] = "ether proto 0x0800";
         // char filter_exp[] = "arp";
-        // char filter_exp[] = "ether proto 0x88ba";
-        char filter_exp[] = "";
+        char filter_exp[] = "ether proto 0x88ba";
+        // char filter_exp[] = "";
         wxThread::Sleep(10);
-        wxGetApp().network_interface.sniff_traffic(10, filter_exp, "parse_sv_streams", 100);
+        wxGetApp().network_interface.sniff_traffic(10, filter_exp, "parse_sv_streams", 20);
     }
 
-    // wxThread::Sleep(2000);
+    wxThread::Sleep(1000);
     std::cout << "\nHello from thread" << std::endl;
 
     // wxThreadEvent *event = new wxThreadEvent(EVT_SV_SEARCH_COMPLETE, wxIDaaa);

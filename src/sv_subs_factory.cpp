@@ -68,7 +68,6 @@ void SVSubscribe::select_sv_streams(std::vector<long> *ids)
                 }
             }
 
-            filter_stream << " and ether proto 0x" << std::hex << it->ether_type;
             filter_stream << ")";
         }
         else

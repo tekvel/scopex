@@ -142,6 +142,12 @@ void SVSelectionDialog::UpdateSVList()
 
     auto sv_list = wxGetApp().sv_sub.sv_list;
 
+    if (sv_list && sv_list->empty())
+    {
+        wxMessageBox(wxT("SV streams are not found!\n\nTry again."), wxT("Warning"), wxICON_WARNING);
+        return;
+    }
+
     for (const auto &stream : *sv_list)
     {
         wxString source;
@@ -156,10 +162,10 @@ void SVSelectionDialog::UpdateSVList()
             if (i < ETHER_ADDR_LEN - 1)
                 destination += ":";
         }
+        
+        wxString APPID = wxString::Format("0x%04x", stream.APPID);
+        wxString Length = wxString::Format("%i", stream.Length);
 
-        bool tagged = stream.tagged;
-        wxString protocol = wxString::Format("0x%04x", stream.ether_type);
-
-        m_svStreamList->AddStream(source, destination, tagged, protocol);
+        m_svStreamList->AddStream(source, destination, APPID, Length);
     }
 }

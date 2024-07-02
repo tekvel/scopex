@@ -8,7 +8,7 @@ class SVStreamList : public wxListCtrl
 {
 public:
     SVStreamList(wxWindow *parent, wxWindowID id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
-    void AddStream(const wxString &source, const wxString &destination, bool tagged, const wxString &protocol);
+    void AddStream(const wxString &source, const wxString &destination, const wxString &APPID, const wxString &Length);
 
 private:
     void InitList();

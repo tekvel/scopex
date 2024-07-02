@@ -19,18 +19,26 @@
 /* Ethernet header */
 struct ethernet_header
 {
-    u_int8_t ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
-    u_int8_t ether_shost[ETHER_ADDR_LEN]; /* Source host address */
-    u_int16_t ether_type;                 /* Ethernet type */
+    u_int8_t ether_dhost[ETHER_ADDR_LEN]; // Destination host address
+    u_int8_t ether_shost[ETHER_ADDR_LEN]; // Source host address
+    u_int16_t ether_type;                 // Ethernet type
+    u_int16_t APPID;                      // APPID
+    u_int16_t Length;                     // Length
+    u_int16_t res1;                       // Reserved 1
+    u_int16_t res2;                       // Reserved 2
 };
 /* Tagged Ethernet header */
 struct tag_ethernet_header
 {
-    u_char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
-    u_char ether_shost[ETHER_ADDR_LEN]; /* Source host address */
-    u_short tpid;                       /* Tag Protocol ID (0x8100)*/
-    u_short tci;                        /* Tag Control Information*/
-    u_short ether_type;                 /* Ethernet type */
+    u_char ether_dhost[ETHER_ADDR_LEN]; // Destination host address 
+    u_char ether_shost[ETHER_ADDR_LEN]; // Source host address 
+    u_short tpid;                       // Tag Protocol ID (0x8100)
+    u_short tci;                        // Tag Control Information
+    u_short ether_type;                 // Ethernet type 
+    u_int16_t APPID;                      // APPID
+    u_int16_t Length;                     // Length
+    u_int16_t res1;                       // Reserved 1
+    u_int16_t res2;                       // Reserved 2
 };
 
 // Network interface class

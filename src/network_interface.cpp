@@ -70,6 +70,11 @@ bool NIF::select_device(int id)
         std::cerr << "Couldn't open device: " << errbuf << std::endl;
         return false;
     }
+    // Set non-blocking mode
+    if (pcap_setnonblock(handle, 1, errbuf) == -1) {
+        std::cerr << "Couldn't set non-blocking mode:" << errbuf << std::endl;
+        return false;
+    }
 
     std::cout << "Device successfully opened" << std::endl;
     return true;
@@ -130,7 +135,6 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
         }
         else if (result == 0)
         {
-
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
 
@@ -144,7 +148,7 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
 
             // Busy-wait loop to simulate delay of 20 ms
             auto wait_start = std::chrono::steady_clock::now();
-            while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wait_start).count() < 20)
+            while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wait_start).count() < 5)
             {
                 // Busy-wait
             }
@@ -204,14 +208,14 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
 
     if (ntohs(eth->ether_type) == 0x8100)
     {
-        stream.tagged = true;
         auto *tag_eth = reinterpret_cast<const tag_ethernet_header *>(packet);
-        stream.ether_type = ntohs(tag_eth->ether_type);
+        stream.APPID = ntohs(tag_eth->APPID);
+        stream.Length = ntohs(tag_eth->Length);
     }
     else
     {
-        stream.tagged = false;
-        stream.ether_type = ntohs(eth->ether_type);
+        stream.APPID = ntohs(eth->APPID);
+        stream.Length = ntohs(eth->Length);
     }
 
     wxGetApp().sv_sub.sv_list->insert(stream);
