@@ -2,7 +2,7 @@
 #include "nif_dialog.h"
 
 NetworkSelectionDialog::NetworkSelectionDialog(const wxString &title)
-    : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(550, 400))
+    : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(550, 400), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
     wxPanel *panel = new wxPanel(this, -1);
     wxBoxSizer *vbox1 = new wxBoxSizer(wxVERTICAL);

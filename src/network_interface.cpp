@@ -206,16 +206,154 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
     std::copy(std::begin(eth->ether_dhost), std::end(eth->ether_dhost), std::begin(stream.ether_dhost));
     std::copy(std::begin(eth->ether_shost), std::end(eth->ether_shost), std::begin(stream.ether_shost));
 
+    const u_char *sv_data;
+
     if (ntohs(eth->ether_type) == 0x8100)
     {
         auto *tag_eth = reinterpret_cast<const tag_ethernet_header *>(packet);
         stream.APPID = ntohs(tag_eth->APPID);
         stream.Length = ntohs(tag_eth->Length);
+        sv_data = packet + sizeof(tag_ethernet_header);
     }
     else
     {
         stream.APPID = ntohs(eth->APPID);
         stream.Length = ntohs(eth->Length);
+        sv_data = packet + sizeof(ethernet_header);
+    }
+
+    int offset = 0; // Initial offset for SV PDU parsing
+
+    if (sv_data[offset] == 0x60)
+    {
+        u_char svPDU_len = sv_data[offset+1];
+        if (svPDU_len > 0x80)
+        {
+            if (svPDU_len == 0x81)
+            {
+                u_char svPDU = sv_data[offset+2];
+                offset += 3;    // Move to value of svPDU or tag of noASDU
+            }
+            else if (svPDU_len == 0x82)
+            {
+                u_int16_t svPDU = sv_data[offset+2];
+                offset += 4;    // Move to value of svPDU or tag of noASDU
+            }
+        }
+        else
+        {
+            u_char svPDU = sv_data[offset+1];
+            offset += 2;    // Move to value of svPDU or tag of npASDU
+        }
+        
+        if (sv_data[offset] == 0x80)
+        {
+            u_char noASDU = sv_data[offset+2];  // Number of ASDU
+            stream.noASDU = noASDU;
+            offset += 3;    // Move to tag of seqASDU
+
+            if (sv_data[offset] == 0xA2)
+            {
+                u_char seqASDU_len = sv_data[offset+1]; // Length of seqASDU
+                if (seqASDU_len > 0x80)
+                {
+                    if (seqASDU_len == 0x81)
+                    {
+                        u_char seqASDU = sv_data[offset+2];
+                        offset += 3;    // Move to tag of ASDU
+                    }
+                    else if (seqASDU_len == 0x82)
+                    {
+                        u_int16_t seqASDU = sv_data[offset+2];
+                        offset += 4;    // Move to tag of ASDU
+                    }
+                }
+                else
+                {
+                    u_char seqASDU = sv_data[offset+1];
+                    offset += 2;    // Move to tag of ASDU
+                }
+
+                u_char ASDU_len = 0;
+                for (int i = 0; i < noASDU; ++i)
+                {
+                    if (sv_data[offset + i*ASDU_len] == 0x30)
+                    {
+                        ASDU_len = sv_data[offset + i*ASDU_len + 1] + 2;    // + 2 means plus one tag byte and one length byte
+
+                        if (sv_data[offset + i*ASDU_len + 2] == 0x80)
+                        {
+                            u_char svID_len = sv_data[offset + i*ASDU_len + 3];
+
+                            std::vector<u_char> svID(svID_len);
+                            memcpy(svID.data(), (sv_data + offset + i*ASDU_len + 4), svID_len * sizeof(u_char));
+                            stream.svID = svID;
+
+                            if (sv_data[offset + i*ASDU_len + 4 + svID_len] == 0x82)
+                            {
+                                u_int16_t smpCnt;
+                                memcpy(&smpCnt, (sv_data + offset + i*ASDU_len + 6 + svID_len), 2);
+                                smpCnt = ntohs(smpCnt);
+
+                                if (sv_data[offset + i*ASDU_len + 8 + svID_len] == 0x83)
+                                {
+                                    u_int32_t confRev;
+                                    memcpy(&confRev, (sv_data + offset + i*ASDU_len + 10 + svID_len), 4);
+                                    confRev = ntohl(confRev);
+
+                                    if (sv_data[offset + i*ASDU_len + 14 + svID_len] == 0x85)
+                                    {
+                                        u_char smpSync = sv_data[offset + i*ASDU_len + 16 + svID_len];
+
+                                        if (sv_data[offset + i*ASDU_len + 17 + svID_len] == 0x87)
+                                        {
+                                            u_char seqData_len = sv_data[offset + i*ASDU_len + 18 + svID_len];
+                                            stream.DatSet = seqData_len / 8;
+                                        }
+                                        else
+                                        {
+                                            std::cerr << "Error: Expected tag 0x87 (dataset) not found" << std::endl;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        std::cerr << "Error: Expected tag 0x85 (smpSync) not found" << std::endl;
+                                    }
+                                }
+                                else
+                                {
+                                    std::cerr << "Error: Expected tag 0x83 (confRev) not found" << std::endl;
+                                }
+                            }
+                            else
+                            {
+                                std::cerr << "Error: Expected tag 0x82 (smpCnt) not found" << std::endl;
+                            }
+                        }
+                        else
+                        {
+                            std::cerr << "Error: Expected tag 0x80 (svID) not found" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cerr << "Error: Expected tag 0x30 (ASDU) not found" << std::endl;
+                    }
+                }
+            }
+            else
+            {
+                std::cerr << "Error: Expected tag 0xA2 (seqASDU) not found" << std::endl;
+            }
+        }
+        else
+        {
+            std::cerr << "Error: Expected tag 0x80 (noASDU) not found" << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "Error: Expected tag 0x60 (svPDU) not found" << std::endl;
     }
 
     wxGetApp().sv_sub.sv_list->insert(stream);

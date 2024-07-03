@@ -2,7 +2,7 @@
 #include "main.h"
 
 SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
-    : wxDialog(parent, -1, title, wxDefaultPosition, wxSize(550, 350))
+    : wxDialog(parent, -1, title, wxDefaultPosition, wxSize(720, 350), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
     wxPanel *panel = new wxPanel(this, -1);
     wxBoxSizer *vbox1 = new wxBoxSizer(wxVERTICAL);
@@ -165,7 +165,11 @@ void SVSelectionDialog::UpdateSVList()
         
         wxString APPID = wxString::Format("0x%04x", stream.APPID);
         wxString Length = wxString::Format("%i", stream.Length);
+        std::string svIDStr(stream.svID.begin(), stream.svID.end());
+        wxString svID = wxString::FromUTF8(svIDStr.c_str());
+        wxString noASDU = wxString::Format("%i", stream.noASDU);
+        wxString DatSet = wxString::Format("%i", stream.DatSet);
 
-        m_svStreamList->AddStream(source, destination, APPID, Length);
+        m_svStreamList->AddStream(source, destination, APPID, Length, svID, noASDU, DatSet);
     }
 }
