@@ -29,7 +29,9 @@ wxThread::ExitCode SVSearchThread::Entry()
 
     std::cout << "SV Search Thread started" << std::endl;
 
-    for (int i = 0; i != 5; ++i)
+    int k = 10, num_packets = 192;
+
+    for (int i = 0; i != k; ++i)
     {
         {
             wxCriticalSectionLocker locker(wxGetApp().m_critsect);
@@ -44,13 +46,16 @@ wxThread::ExitCode SVSearchThread::Entry()
         char filter_exp[] = "ether proto 0x88ba";
         // char filter_exp[] = "";
         wxThread::Sleep(10);
-        wxGetApp().network_interface.sniff_traffic(10, filter_exp, "parse_sv_streams", 20);
+        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp, "parse_sv_streams", 1000);
+    }
+
+    for (auto& pair : *wxGetApp().sv_sub.sv_list_cnt) {
+        pair.second = 0;
     }
 
     wxThread::Sleep(1000);
     std::cout << "\nHello from thread" << std::endl;
 
-    // wxThreadEvent *event = new wxThreadEvent(EVT_SV_SEARCH_COMPLETE, wxIDaaa);
     wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_SEARCH_COMPLETED);
     wxQueueEvent(wxGetApp().GetMainFrame()->SV_dialog, event);
 

@@ -23,6 +23,10 @@ std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubs
 void SVSubscribe::delete_sv_streams()
 {
     sv_list->clear();
+    sv_list_raw->clear();
+    sv_list_cnt->clear();
+    sv_list_prev_time->clear();
+
 }
 
 void SVSubscribe::select_sv_streams(std::vector<long> *ids)
@@ -84,4 +88,21 @@ void SVSubscribe::select_sv_streams(std::vector<long> *ids)
     filter_cstr.push_back('\0');
 
     wxGetApp().network_interface.sniff_traffic(2, filter_exp.data(), "got_packet", 100);
+}
+
+u_int64_t SVSubscribe::get_closer_freq(double raw_F)
+{
+    std::vector<u_int64_t> possible_F = {4000, 4800, 9600, 12800, 14400};
+    u_int64_t minDiff = raw_F - possible_F[0];
+    size_t ind_of_F = 0;
+
+    for (size_t i = 0; i < possible_F.size(); ++i)
+    {
+        if ((std::abs(raw_F - possible_F[i])) < minDiff)
+        {
+            minDiff = std::abs(raw_F - possible_F[i]);
+            ind_of_F = i;
+        }
+    }
+    return possible_F[ind_of_F];
 }

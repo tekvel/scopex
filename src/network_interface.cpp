@@ -138,15 +138,13 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
 
-            std::cout << "Elapsed time: " << elapsed << " ms" << std::endl;
-
             if (elapsed >= timeout_ms)
             {
                 std::cerr << "Timeout: No packets captured within the specified timeout period of " << timeout_ms << " ms." << std::endl;
                 return;
             }
 
-            // Busy-wait loop to simulate delay of 20 ms
+            // Busy-wait loop to simulate delay of 5 ms
             auto wait_start = std::chrono::steady_clock::now();
             while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wait_start).count() < 5)
             {
@@ -212,15 +210,15 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
     {
         auto *tag_eth = reinterpret_cast<const tag_ethernet_header *>(packet);
         stream.APPID = ntohs(tag_eth->APPID);
-        stream.Length = ntohs(tag_eth->Length);
         sv_data = packet + sizeof(tag_ethernet_header);
     }
     else
     {
         stream.APPID = ntohs(eth->APPID);
-        stream.Length = ntohs(eth->Length);
         sv_data = packet + sizeof(ethernet_header);
     }
+
+    stream.F = 0;
 
     int offset = 0; // Initial offset for SV PDU parsing
 
@@ -356,5 +354,39 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
         std::cerr << "Error: Expected tag 0x60 (svPDU) not found" << std::endl;
     }
 
-    wxGetApp().sv_sub.sv_list->insert(stream);
+    auto val = wxGetApp().sv_sub.sv_list_raw->insert(stream);
+
+    if (val.second == true)
+    {
+        wxGetApp().sv_sub.sv_list_cnt->insert({reinterpret_cast<u_int64_t>(&(*val.first)), 1});
+    }
+    else
+    {
+        auto it = wxGetApp().sv_sub.sv_list_cnt->find(reinterpret_cast<u_int64_t>(&(*val.first)));
+        if (it != wxGetApp().sv_sub.sv_list_cnt->end()) 
+        {
+            it->second++;
+        }
+        if (it->second%48 == 0)
+        {
+            std::cout << static_cast<unsigned>(stream.noASDU) << std::endl;
+            std::cout << "Timestamp, usec: " << std::dec << header->ts.tv_usec << std::endl;
+
+            auto it = wxGetApp().sv_sub.sv_list_prev_time->find(reinterpret_cast<u_int64_t>(&(*val.first)));
+            if (it != wxGetApp().sv_sub.sv_list_prev_time->end()) 
+            {
+                double time_diff = header->ts.tv_usec - it->second;
+                if (time_diff < 500000)
+                {
+                    stream.F = wxGetApp().sv_sub.get_closer_freq(48000000.0/(time_diff)*stream.noASDU);
+                    wxGetApp().sv_sub.sv_list->insert(stream);
+
+                    std::cout << "Freq: " << 48000000.0/(time_diff)*stream.noASDU << std::endl;
+                }
+                wxGetApp().sv_sub.sv_list_prev_time->erase(reinterpret_cast<u_int64_t>(&(*val.first)));
+            }
+            wxGetApp().sv_sub.sv_list_prev_time->insert({reinterpret_cast<u_int64_t>(&(*val.first)), header->ts.tv_usec});
+
+        }
+    }
 }

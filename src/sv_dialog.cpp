@@ -164,12 +164,12 @@ void SVSelectionDialog::UpdateSVList()
         }
         
         wxString APPID = wxString::Format("0x%04x", stream.APPID);
-        wxString Length = wxString::Format("%i", stream.Length);
         std::string svIDStr(stream.svID.begin(), stream.svID.end());
         wxString svID = wxString::FromUTF8(svIDStr.c_str());
         wxString noASDU = wxString::Format("%i", stream.noASDU);
+        wxString F = wxString::Format("%llu", stream.F);
         wxString DatSet = wxString::Format("%i", stream.DatSet);
 
-        m_svStreamList->AddStream(source, destination, APPID, Length, svID, noASDU, DatSet);
+        m_svStreamList->AddStream(source, destination, APPID, svID, noASDU, F, DatSet);
     }
 }
