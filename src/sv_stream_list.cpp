@@ -13,7 +13,7 @@ void SVStreamList::InitList()
     AppendColumn("APPID", wxLIST_FORMAT_CENTER, 80);
     AppendColumn("svID", wxLIST_FORMAT_CENTER, 180);
     AppendColumn("noASDU", wxLIST_FORMAT_CENTER, 80);
-    AppendColumn("F", wxLIST_FORMAT_CENTER, 80);
+    AppendColumn("F, Hz", wxLIST_FORMAT_CENTER, 80);
     AppendColumn("DatSet", wxLIST_FORMAT_CENTER, 80);
 }
 

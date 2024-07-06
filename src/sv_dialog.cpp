@@ -18,6 +18,7 @@ SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
     hbox->Add(m_text1, 3, wxALIGN_CENTER | wxALL, 5);
 
     m_buttonUpdate = new wxButton(m_panel1, wxID_SV_DIALOG_UPDATE, _("Update List"), wxDefaultPosition, wxDefaultSize, 0);
+    m_buttonUpdate->SetMaxSize( wxSize( 120,50 ) );
     hbox->Add(m_buttonUpdate, 1, wxALL | wxALIGN_CENTER_VERTICAL, 5);
 
     m_panel1->SetSizer(hbox);
@@ -44,7 +45,7 @@ SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
     gsizer->Add(m_buttonOK, 0, wxALIGN_CENTER | wxALL, 5);
 
     m_downPpanel->SetSizer(gsizer);
-    m_downPpanel->Layout(); // MainFrame *mainFrame = wxGetApp().GetMainFrame();
+    m_downPpanel->Layout();
     gsizer->Fit(m_downPpanel);
     vbox1->Add(m_downPpanel, 1, wxEXPAND | wxALL, 5);
 
