@@ -29,7 +29,7 @@ wxThread::ExitCode SVSearchThread::Entry()
 
     std::cout << "SV Search Thread started" << std::endl;
 
-    int k = 10, num_packets = 192;
+    int k = 10, num_packets = 96;
 
     for (int i = 0; i != k; ++i)
     {
@@ -41,16 +41,14 @@ wxThread::ExitCode SVSearchThread::Entry()
         if (TestDestroy())
             break;
 
-        // char filter_exp[] = "ether proto 0x0800";
-        // char filter_exp[] = "arp";
-        char filter_exp[] = "ether proto 0x88ba";
-        // char filter_exp[] = "";
+        char filter_exp[] = "ether proto 0x88ba";   // Ethernet protocol of SV (IEC 61850)
+        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp, "parse_sv_streams", 100);
+        
         wxThread::Sleep(10);
-        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp, "parse_sv_streams", 1000);
     }
 
     for (auto& pair : *wxGetApp().sv_sub.sv_list_cnt) {
-        pair.second = 0;
+        pair.second = 0;    // Reset counter of SV streams
     }
 
     wxThread::Sleep(1000);

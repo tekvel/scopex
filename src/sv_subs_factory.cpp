@@ -104,5 +104,12 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
             ind_of_F = i;
         }
     }
-    return possible_F[ind_of_F];
+    if (minDiff > 200)
+    {
+        return -1;  // If minimal difference is higher than 200 return error
+    }
+    else
+    {
+        return possible_F[ind_of_F];
+    }
 }
