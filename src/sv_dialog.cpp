@@ -78,16 +78,19 @@ void SVSelectionDialog::OnCancel(wxCommandEvent &event)
 
 void SVSelectionDialog::OnOK(wxCommandEvent &event)
 {
+    if (!wxGetApp().sv_sub.selectedSV_ids->empty())
+    {
+        wxGetApp().sv_sub.selectedSV_ids->clear();
+    }
     wxArrayInt selectedItems;
-    std::vector<long> *selectedSV = new std::vector<long>;
     long item = -1;
     while ((item = m_svStreamList->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
     {
         selectedItems.Add(item);
-        selectedSV->push_back(item);
+        wxGetApp().sv_sub.selectedSV_ids->push_back(item);
     }
 
-    wxGetApp().sv_sub.select_sv_streams(selectedSV);
+    wxGetApp().sv_sub.select_sv_streams();
 
     int n = selectedItems.GetCount();
     if (n == 0)
@@ -102,10 +105,10 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
         {
             wxString source = m_svStreamList->GetItemText(index, 0);
             wxString destination = m_svStreamList->GetItemText(index, 1);
-            wxString tagged = m_svStreamList->GetItemText(index, 2);
-            wxString protocol = m_svStreamList->GetItemText(index, 3);
+            wxString APPID = m_svStreamList->GetItemText(index, 2);
+            wxString SVID = m_svStreamList->GetItemText(index, 3);
 
-            std::cout << "Selected Item " << index << ": " << source << ", " << destination << ", " << tagged << ", " << protocol << std::endl;
+            std::cout << "Selected Item " << index << ": " << source << ", " << destination << ", " << APPID << ", " << SVID << std::endl;
         }
 
         // Close the dialog

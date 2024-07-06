@@ -72,11 +72,13 @@ public:
     SVSubscribe() : sv_list(std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>()),
                     sv_list_raw(std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>()),
                     sv_list_cnt(std::make_shared<std::map<uintptr_t, u_int32_t>>()),
-                    sv_list_prev_time(std::make_shared<std::map<uintptr_t, u_int64_t>>()) {}
+                    sv_list_prev_time(std::make_shared<std::map<uintptr_t, u_int64_t>>()),
+                    selectedSV_ids(std::make_shared<std::vector<long>>()),
+                    filter_exp(std::make_shared<std::vector<char>>()) {}
     ~SVSubscribe() {}
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> get_sv_list();
-    void select_sv_streams(std::vector<long> *ids);
+    void select_sv_streams();
     void delete_sv_streams();
     u_int64_t get_closer_freq(double raw_F);
 
@@ -85,6 +87,9 @@ public:
 
     std::shared_ptr<std::map<uintptr_t, u_int32_t>> sv_list_cnt;
     std::shared_ptr<std::map<uintptr_t, u_int64_t>> sv_list_prev_time;
+
+    std::shared_ptr<std::vector<long>> selectedSV_ids;
+    std::shared_ptr<std::vector<char>> filter_exp;
 
 private:
 };

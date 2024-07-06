@@ -26,12 +26,13 @@ void SVSubscribe::delete_sv_streams()
     sv_list_raw->clear();
     sv_list_cnt->clear();
     sv_list_prev_time->clear();
+    selectedSV_ids->clear();
 
 }
 
-void SVSubscribe::select_sv_streams(std::vector<long> *ids)
+void SVSubscribe::select_sv_streams()
 {
-    if (ids->empty())
+    if (selectedSV_ids->empty())
     {
         std::cerr << "SV Stream is not selected!" << std::endl;
         return;
@@ -40,9 +41,9 @@ void SVSubscribe::select_sv_streams(std::vector<long> *ids)
     std::ostringstream filter_stream;
     filter_stream << "(";
 
-    for (size_t idx = 0; idx < ids->size(); ++idx)
+    for (size_t idx = 0; idx < selectedSV_ids->size(); ++idx)
     {
-        auto id = ids->at(idx);
+        auto id = selectedSV_ids->at(idx);
         auto it = sv_list->begin();
         std::advance(it, id);
 
@@ -82,12 +83,10 @@ void SVSubscribe::select_sv_streams(std::vector<long> *ids)
 
     filter_stream << ")";
 
-    std::string filter_exp = filter_stream.str();
-    std::cout << "filter_exp: " << filter_exp << std::endl;
-    std::vector<char> filter_cstr(filter_exp.begin(), filter_exp.end());
-    filter_cstr.push_back('\0');
-
-    wxGetApp().network_interface.sniff_traffic(2, filter_exp.data(), "got_packet", 100);
+    std::string filter_exp_str = filter_stream.str();
+    std::cout << "filter_exp: " << filter_exp_str << std::endl;
+    filter_exp = std::make_shared<std::vector<char>>(filter_exp_str.begin(), filter_exp_str.end());
+    filter_exp->push_back('\0');
 }
 
 u_int64_t SVSubscribe::get_closer_freq(double raw_F)
@@ -104,7 +103,7 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
             ind_of_F = i;
         }
     }
-    if (minDiff > 200)
+    if (minDiff > 100)
     {
         return -1;  // If minimal difference is higher than 200 return error
     }
