@@ -36,7 +36,7 @@ sudo ./build/prog
 
 - [x] Graphical panels for drawing signals
 - [x] The ability to select a network interface
-- [ ] SV parser
-- [ ] The ability to subscribe to various SV streams
+- [x] SV parser
+- [x] The ability to subscribe to various SV streams
 - [ ] The ability to determine signal parameters
 - [ ] The ability to upload/download signals
