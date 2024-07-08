@@ -1,13 +1,20 @@
 #include "main.h"
-#include "communicate.h"
+#include "main_frame.h"
 
-IMPLEMENT_APP(MyApp)
+wxIMPLEMENT_APP(MyApp);
+
+MyApp::MyApp()
+{
+    m_shuttingDown = false;
+}
 
 bool MyApp::OnInit()
 {
+    if (!wxApp::OnInit())
+        return false;
 
-    Communicate *communicate = new Communicate(nullptr, wxID_ANY, wxT("3PhaseDiagrams"));
-    communicate->Show(true);
+    frame = new MainFrame(nullptr, wxID_ANY, wxT("Scopex"));
+    frame->Show(true);
 
     return true;
 }
