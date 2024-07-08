@@ -72,7 +72,7 @@ void SVSubscribe::select_sv_streams()
                     filter_stream << ":";
                 }
             }
-
+            filter_stream << " and ether proto 0x88ba";
             filter_stream << ")";
         }
         else
