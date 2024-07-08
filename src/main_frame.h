@@ -3,6 +3,8 @@
 
 #include <wx/wxprec.h>
 #include <wx/menu.h>
+#include <wx/bitmap.h>
+#include <wx/image.h>
 
 #include "panels.h"
 #include "threads.h"
@@ -24,6 +26,11 @@ public:
     wxMenu *menuFile;
     wxMenu *menuHelp;
     wxMenu *menuNetwork;
+    wxToolBar *m_toolbar;
+    wxToolBarToolBase* toolSave;
+    wxToolBarToolBase* toolPlay;
+    wxToolBarToolBase* toolStop;
+    wxComboBox* toolComboBox;
 
     NetworkSelectionDialog *NIF_dialog;
     SVSelectionDialog *SV_dialog;
@@ -37,9 +44,12 @@ public:
 
 enum
 {
-    THREAD_START_THREAD = 201,
-    wxID_NETWORK_DIALOG,
+    wxID_NETWORK_DIALOG = 201,
     wxID_SV_DIALOG,
+    wxID_SAVE_TOOLBOX,
+    wxID_PLAY_TOOLBOX,
+    wxID_STOP_TOOLBOX,
+    wxID_COMBO_BOX_TOOLBOX
 };
 
 #endif

@@ -15,13 +15,35 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	menuNetwork = new wxMenu;
 	menuNetwork->Append(wxID_NETWORK_DIALOG, wxT("Select &Network"));
 	menuNetwork->Append(wxID_SV_DIALOG, wxT("Select &SV"));
-	// menuNetwork->Append(THREAD_START_THREAD, wxT("&Thread"));
 	m_menubar->Append(menuNetwork, wxT("&Network Selection"));
 
 	menuHelp = new wxMenu;
 	menuHelp->Append(wxID_ABOUT, wxT("&Help"));
 	m_menubar->Append(menuHelp, wxT("&About"));
 	SetMenuBar(m_menubar);
+
+	m_toolbar = this->CreateToolBar( wxTB_HORIZONTAL, wxID_ANY );
+	m_toolbar->SetToolBitmapSize(wxSize(16,16));
+
+	wxImage::AddHandler(new wxPNGHandler);
+
+	wxBitmap saveBitmap = wxBitmap(wxT("src/resources/icons/disk.png"), wxBITMAP_TYPE_PNG);
+    wxBitmap playBitmap = wxBitmap(wxT("src/resources/icons/play-circle.png"), wxBITMAP_TYPE_PNG);
+    wxBitmap stopBitmap = wxBitmap(wxT("src/resources/icons/stop-circle.png"), wxBITMAP_TYPE_PNG);
+
+	toolSave = m_toolbar->AddTool(wxID_SAVE_TOOLBOX, "Save", saveBitmap, "Save");
+
+	m_toolbar->AddSeparator();
+
+	toolPlay = m_toolbar->AddTool(wxID_PLAY_TOOLBOX, "Save", playBitmap, "Play");
+	toolStop = m_toolbar->AddTool(wxID_PLAY_TOOLBOX, "Stop", stopBitmap, "Stop");
+
+	m_toolbar->AddSeparator();
+
+	toolComboBox = new wxComboBox( m_toolbar, wxID_COMBO_BOX_TOOLBOX, wxEmptyString, wxDefaultPosition, wxSize(250,15), 0, NULL, wxCB_READONLY);
+	toolComboBox->SetSelection( 0 );
+	m_toolbar->AddControl(toolComboBox);
+	m_toolbar->Realize();
 
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);					   // EVT_Quit
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);				   // EVT_About
