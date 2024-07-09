@@ -3,6 +3,8 @@
 
 std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubscribe::get_sv_list()
 {
+    delete_sv_streams();
+    
     SVSearchThread *thread = new SVSearchThread;
     if (thread->Create() != wxTHREAD_NO_ERROR)
     {

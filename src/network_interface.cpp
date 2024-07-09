@@ -64,7 +64,7 @@ bool NIF::select_device(int id)
         return false;
     }
     // Open capture device
-    handle = pcap_open_live(current_device->name, BUFSIZ, 1, 2, errbuf);
+    handle = pcap_open_live(current_device->name, BUFSIZ, 1, 1, errbuf);
     if (handle == nullptr)
     {
         std::cerr << "Couldn't open device: " << errbuf << std::endl;
