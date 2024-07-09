@@ -37,7 +37,7 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_toolbar->AddSeparator();
 
 	toolPlay = m_toolbar->AddTool(wxID_PLAY_TOOLBOX, "Save", playBitmap, "Play");
-	toolStop = m_toolbar->AddTool(wxID_PLAY_TOOLBOX, "Stop", stopBitmap, "Stop");
+	toolStop = m_toolbar->AddTool(wxID_STOP_TOOLBOX, "Stop", stopBitmap, "Stop");
 
 	m_toolbar->AddSeparator();
 
@@ -135,12 +135,32 @@ void MainFrame::OnSave(wxCommandEvent &event)
 
 void MainFrame::OnPlay(wxCommandEvent &event)
 {
+	for (auto &id : *wxGetApp().sv_sub.selectedSV_ids)
+	{
+		SVHandlerThread *thread = new SVHandlerThread(id);
+		if (thread->Create() != wxTHREAD_NO_ERROR)
+		{
+			std::cerr << "Can't create " << id << " thread!" << std::endl;
+			return;
+		}
+		wxCriticalSectionLocker enter(wxGetApp().m_critsect);
+		wxGetApp().m_threads.Add(thread);
+		if (thread->Run() != wxTHREAD_NO_ERROR)
+		{
+			std::cerr << "Can't start " << id << " thread!" << std::endl;
+			return;
+		}
+	}
 	
 }
 
 void MainFrame::OnStop(wxCommandEvent &event)
 {
-	
+	wxArrayThread &threads = wxGetApp().m_threads;
+	if (!threads.IsEmpty())
+	{
+		wxGetApp().m_shuttingDown = true;
+	}
 }
 
 void MainFrame::OnComboBoxSelect(wxCommandEvent &event)

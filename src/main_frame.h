@@ -7,7 +7,7 @@
 #include <wx/image.h>
 
 #include "panels.h"
-#include "threads.h"
+#include "sv_handler.h"
 // Dialog windows
 #include "nif_dialog.h"
 #include "sv_dialog.h"
