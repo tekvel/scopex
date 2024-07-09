@@ -90,8 +90,6 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
         wxGetApp().sv_sub.selectedSV_ids->push_back(item);
     }
 
-    wxGetApp().sv_sub.select_sv_streams();
-
     int n = selectedItems.GetCount();
     if (n == 0)
     {
@@ -99,16 +97,20 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
     }
     else
     {
+        wxGetApp().sv_sub.select_sv_streams();
+
         std::cout << "Number of selected items: " << n << std::endl;
+
+        wxGetApp().GetMainFrame()->toolComboBox->Clear();
 
         for (const auto &index : selectedItems)
         {
-            wxString source = m_svStreamList->GetItemText(index, 0);
-            wxString destination = m_svStreamList->GetItemText(index, 1);
             wxString APPID = m_svStreamList->GetItemText(index, 2);
             wxString SVID = m_svStreamList->GetItemText(index, 3);
+            wxString SV_Stream = "APPID: " + APPID + "; SVID: " +  SVID;
 
-            std::cout << "Selected Item " << index << ": " << source << ", " << destination << ", " << APPID << ", " << SVID << std::endl;
+            wxGetApp().GetMainFrame()->toolComboBox->Append(SV_Stream);
+            wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
         }
 
         // Close the dialog

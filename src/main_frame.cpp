@@ -22,6 +22,7 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_menubar->Append(menuHelp, wxT("&About"));
 	SetMenuBar(m_menubar);
 
+	// Toolbar
 	m_toolbar = this->CreateToolBar( wxTB_HORIZONTAL, wxID_ANY );
 	m_toolbar->SetToolBitmapSize(wxSize(16,16));
 
@@ -40,15 +41,23 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 
 	m_toolbar->AddSeparator();
 
-	toolComboBox = new wxComboBox( m_toolbar, wxID_COMBO_BOX_TOOLBOX, wxEmptyString, wxDefaultPosition, wxSize(250,15), 0, NULL, wxCB_READONLY);
-	toolComboBox->SetSelection( 0 );
+	toolComboBox = new wxComboBox( m_toolbar, wxID_COMBO_BOX_TOOLBOX, wxEmptyString, wxDefaultPosition, wxSize(350,15), 0, NULL, wxCB_READONLY);
+	toolComboBox->SetToolTip("Choose SV streams to display");
 	m_toolbar->AddControl(toolComboBox);
 	m_toolbar->Realize();
 
+	// Binding events
+	// Menu events
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);					   // EVT_Quit
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);				   // EVT_About
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnNetworkSelect, this, wxID_NETWORK_DIALOG); // EVT_NIFSelection
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnSVSelect, this, wxID_SV_DIALOG);		   // EVT_SVSelection
+
+	// Toolbar events
+	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnSave, this, wxID_SAVE_TOOLBOX);						// EVT_Save
+	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnPlay, this, wxID_PLAY_TOOLBOX);						// EVT_Play
+	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnStop, this, wxID_STOP_TOOLBOX);						// EVT_Stop
+	Bind(wxEVT_COMBOBOX, &MainFrame::OnComboBoxSelect, this, wxID_COMBO_BOX_TOOLBOX);	// EVT_ComboBoxSelection
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -117,4 +126,38 @@ void MainFrame::OnSVSelect(wxCommandEvent &event)
 	// SV_dialog->Show();
 	SV_dialog->ShowModal();
 	SV_dialog->Destroy();
+}
+
+void MainFrame::OnSave(wxCommandEvent &event)
+{
+
+}
+
+void MainFrame::OnPlay(wxCommandEvent &event)
+{
+	
+}
+
+void MainFrame::OnStop(wxCommandEvent &event)
+{
+	
+}
+
+void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
+{
+	int idx = toolComboBox->GetSelection();
+	std::cout << idx << "\n" << std::endl;
+	auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
+	auto it = wxGetApp().sv_sub.sv_list->begin();
+	std::advance(it, id);
+
+	if (it != wxGetApp().sv_sub.sv_list->end())
+	{
+		std::cout << "APPID: " << it->APPID << std::endl;
+		std::string svID (it->svID.begin(), it->svID.end());
+		std::cout << "SVID: " << svID << std::endl;
+		std::cout << "noASDU: " << static_cast<int>(it->noASDU) << std::endl;
+		std::cout << "F: " << it->F << std::endl;
+		std::cout << "DatSet: " << static_cast<int>(it->DatSet) << std::endl;
+	}
 }

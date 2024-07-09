@@ -40,6 +40,10 @@ public:
     void OnStartThread(wxCommandEvent &event);
     void OnNetworkSelect(wxCommandEvent &event);
     void OnSVSelect(wxCommandEvent &event);
+    void OnSave(wxCommandEvent &event);
+    void OnPlay(wxCommandEvent &event);
+    void OnStop(wxCommandEvent &event);
+    void OnComboBoxSelect(wxCommandEvent &event);
 };
 
 enum
