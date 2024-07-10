@@ -46,6 +46,7 @@ public:
     void OnComboBoxSelect(wxCommandEvent &event);
 
     void RefreshPanels();
+    void EnableTools(bool enable);
 
     int num_of_drawingPanels;
 private:

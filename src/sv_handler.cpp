@@ -1,7 +1,7 @@
 #include "sv_handler.h"
 #include "main.h"
 
-SVHandlerThread::SVHandlerThread(long id) : wxThread(), SV_id(id)
+SVHandlerThread::SVHandlerThread() : wxThread()
 {
 }
 
@@ -29,7 +29,7 @@ wxThread::ExitCode SVHandlerThread::Entry()
 
     std::cout << "SV Processing Thread started" << std::endl;
 
-    int num_packets = 96;
+    int num_packets = 2;
 
     auto filter_exp = wxGetApp().sv_sub.filter_exp;
 
@@ -46,10 +46,10 @@ wxThread::ExitCode SVHandlerThread::Entry()
         if (TestDestroy())
             break;
         
-        // std::cout << SV_id << std::endl;
+        
         wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "got_packet", 100);
 
-        wxThread::Sleep(100);
+        wxThread::Sleep(2000);
     }
 
     std::cout << "Thread finished!" << std::endl;

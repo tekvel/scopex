@@ -130,6 +130,7 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
         wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
         wxGetApp().GetMainFrame()->num_of_drawingPanels = num_of_drawingPanels;
         wxGetApp().GetMainFrame()->RefreshPanels();
+        wxGetApp().GetMainFrame()->EnableTools(true);
 
         // Close the dialog
         Close(true);

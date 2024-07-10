@@ -47,6 +47,8 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	toolComboBox->SetToolTip("Choose SV streams to display");
 	m_toolbar->AddControl(toolComboBox);
 	m_toolbar->Realize();
+	
+	EnableTools(false);		// Disable all tools
 
 	// Binding events
 	// Menu events
@@ -116,6 +118,14 @@ void MainFrame::RefreshPanels()
     this->Layout(); // Ensure the main frame also updates its layout
 }
 
+void MainFrame::EnableTools(bool enable)
+{
+	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, enable);
+	m_toolbar->EnableTool(wxID_STOP_TOOLBOX, enable);
+	m_toolbar->EnableTool(wxID_SAVE_TOOLBOX, enable);
+	m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, enable);
+}
+
 void MainFrame::OnQuit(wxCommandEvent &event)
 {
 	Close(true);
@@ -155,23 +165,20 @@ void MainFrame::OnSave(wxCommandEvent &event)
 
 void MainFrame::OnPlay(wxCommandEvent &event)
 {
-	for (auto &id : *wxGetApp().sv_sub.selectedSV_ids)
+	SVHandlerThread *thread = new SVHandlerThread;
+	if (thread->Create() != wxTHREAD_NO_ERROR)
 	{
-		SVHandlerThread *thread = new SVHandlerThread(id);
-		if (thread->Create() != wxTHREAD_NO_ERROR)
-		{
-			std::cerr << "Can't create " << id << " thread!" << std::endl;
-			return;
-		}
-		wxCriticalSectionLocker enter(wxGetApp().m_critsect);
-		wxGetApp().m_threads.Add(thread);
-		if (thread->Run() != wxTHREAD_NO_ERROR)
-		{
-			std::cerr << "Can't start " << id << " thread!" << std::endl;
-			return;
-		}
+		std::cerr << "Can't create SVHandler thread!" << std::endl;
+		return;
 	}
-	
+	wxCriticalSectionLocker enter(wxGetApp().m_critsect);
+	wxGetApp().m_threads.Add(thread);
+	if (thread->Run() != wxTHREAD_NO_ERROR)
+	{
+		std::cerr << "Can't start SVHandler thread!" << std::endl;
+		return;
+	}
+	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, false);	// Disable Play tool
 }
 
 void MainFrame::OnStop(wxCommandEvent &event)
@@ -180,13 +187,13 @@ void MainFrame::OnStop(wxCommandEvent &event)
 	if (!threads.IsEmpty())
 	{
 		wxGetApp().m_shuttingDown = true;
+		m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);		// Enable Play tool
 	}
 }
 
 void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 {
 	int idx = toolComboBox->GetSelection();
-	std::cout << idx << "\n" << std::endl;
 	auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
 	auto it = wxGetApp().sv_sub.sv_list->begin();
 	std::advance(it, id);
@@ -194,13 +201,6 @@ void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 	if (it != wxGetApp().sv_sub.sv_list->end())
 	{
 		auto DatSet = it->DatSet;
-		
-		std::cout << "APPID: " << it->APPID << std::endl;
-		std::string svID (it->svID.begin(), it->svID.end());
-		std::cout << "SVID: " << svID << std::endl;
-		std::cout << "noASDU: " << static_cast<int>(it->noASDU) << std::endl;
-		std::cout << "F: " << it->F << std::endl;
-		std::cout << "DatSet: " << static_cast<int>(it->DatSet) << std::endl;
 
 		if ((DatSet == 8) || (DatSet == 6))
 		{

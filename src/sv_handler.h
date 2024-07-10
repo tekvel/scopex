@@ -7,13 +7,12 @@
 class SVHandlerThread : public wxThread
 {
 public:
-    SVHandlerThread(long id);
+    SVHandlerThread();
     virtual ~SVHandlerThread();
 
     virtual void *Entry() wxOVERRIDE;
 
 private:
-    long SV_id;
 };
 
 #endif
