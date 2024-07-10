@@ -26,7 +26,7 @@ size_t Signals::getSignalLength() const
 
 void Signals::generateSignalPoints(float amplitude, float frequency, float phaseShift)
 {
-    std::vector<Instance> sig(321);
+    std::vector<Instance> sig(4001);
     for (size_t i = 0; i < sig.size(); ++i)
     {
         float time = static_cast<float>(i * dt);

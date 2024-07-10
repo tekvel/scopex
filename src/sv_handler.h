@@ -1,18 +1,47 @@
 #ifndef SV_HANDLER_H
 #define SV_HANDLER_H
 
-#include "sv_subs_factory.h"
-#include "network_interface.h"
+#include <memory>
+#include <vector>
+#include <cstdint>
 
-class SVHandlerThread : public wxThread
+#define CURRENT_SCALE 1000
+#define VOLTAGE_SCALE 100
+
+struct PhsMeas
+{
+    uint32_t secData;
+    uint32_t q;
+};
+
+struct SV
+{
+    struct 
+    {
+        float sec;
+        float usec;
+    } utcTime;
+
+    uint8_t smpCnt;
+
+    std::vector<PhsMeas> PhsMeasList;
+
+    SV (int n)
+    {
+        PhsMeasList.resize(n);
+    }
+};
+
+class SVHandler
 {
 public:
-    SVHandlerThread();
-    virtual ~SVHandlerThread();
+    SVHandler(uint64_t max_smpCnt, uint8_t DatSet);
+    ~SVHandler();
 
-    virtual void *Entry() wxOVERRIDE;
+    void ProcessData();
 
-private:
+    std::vector<std::pair<uint16_t, std::vector<uint8_t>>> SV_data_raw;
+    std::vector<SV> SV_data;
 };
 
 #endif
