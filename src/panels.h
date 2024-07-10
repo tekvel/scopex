@@ -9,7 +9,7 @@
 class upPanel : public wxPanel
 {
 public:
-    upPanel(wxPanel *parent);
+    upPanel(wxPanel *parent, int num_of_drawingPanels);
 
     void OnXScaleChanged(wxCommandEvent &event);
     void OnYScaleChanged(wxCommandEvent &event);
@@ -24,17 +24,21 @@ private:
     wxGridSizer *m_gsizer1;
     wxPanel *m_parent;
     float amp;
+    int num_of_sinPanels;
 };
 
 class downPanel : public wxPanel
 {
 public:
-    downPanel(wxPanel *parent);
+    downPanel(wxPanel *parent, int num_of_drawingPanels);
     VectorPanel *m_vecPanel;
-    SinusoidalPanel *m_sinPanel;
+    SinusoidalPanel *m_sinPanel1;
+    SinusoidalPanel *m_sinPanel2;
+    wxPanel *m_leftPanel;
+    wxPanel *m_rightPanel;
 
 private:
-    wxBoxSizer *m_bsizer2;
+    int num_of_sinPanels;
 };
 
 const int ID_X = 101;

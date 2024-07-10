@@ -44,6 +44,11 @@ public:
     void OnPlay(wxCommandEvent &event);
     void OnStop(wxCommandEvent &event);
     void OnComboBoxSelect(wxCommandEvent &event);
+
+    void RefreshPanels();
+
+    int num_of_drawingPanels;
+private:
 };
 
 enum

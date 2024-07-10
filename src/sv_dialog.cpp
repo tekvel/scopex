@@ -101,17 +101,35 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
 
         std::cout << "Number of selected items: " << n << std::endl;
 
+        long num_of_drawingPanels = -1;
+
         wxGetApp().GetMainFrame()->toolComboBox->Clear();
 
         for (const auto &index : selectedItems)
         {
             wxString APPID = m_svStreamList->GetItemText(index, 2);
             wxString SVID = m_svStreamList->GetItemText(index, 3);
+            wxString DatSet = m_svStreamList->GetItemText(index, 6);
             wxString SV_Stream = "APPID: " + APPID + "; SVID: " +  SVID;
 
+            if (num_of_drawingPanels < 0)  // check if num_of_drawingPanels variable was changed or not
+            {
+                if (DatSet == "8" || DatSet == "6")
+                {
+                    num_of_drawingPanels = 2;
+                }
+                else
+                {
+                    num_of_drawingPanels = 1;
+                }
+            }
+
             wxGetApp().GetMainFrame()->toolComboBox->Append(SV_Stream);
-            wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
         }
+
+        wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
+        wxGetApp().GetMainFrame()->num_of_drawingPanels = num_of_drawingPanels;
+        wxGetApp().GetMainFrame()->RefreshPanels();
 
         // Close the dialog
         Close(true);

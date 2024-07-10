@@ -3,7 +3,8 @@
 #include <wx/stattext.h>
 #include "main_frame.h"
 
-upPanel::upPanel(wxPanel *parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL)
+upPanel::upPanel(wxPanel *parent, int num_of_drawingPanels) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL),
+                                                              num_of_sinPanels(num_of_drawingPanels)
 {
     m_parent = parent;
     m_gsizer1 = new wxGridSizer(0, 2, 0, 0);
@@ -34,27 +35,77 @@ void upPanel::OnXScaleChanged(wxCommandEvent &event)
 {
     float xScale = event.GetInt() / 100.0;
     MainFrame *frame = (MainFrame *)m_parent->GetParent();
-    frame->m_dp->m_sinPanel->SetScale(xScale, frame->m_dp->m_sinPanel->GetYScale());
+    downPanel *dPanel = (downPanel *)frame->m_dp;
+    if (num_of_sinPanels == 1)
+    {
+        dPanel->m_sinPanel1->SetScale(xScale, dPanel->m_sinPanel1->GetYScale());
+    }
+    else if (num_of_sinPanels == 2)
+    {
+        dPanel->m_sinPanel1->SetScale(xScale, dPanel->m_sinPanel1->GetYScale());
+        dPanel->m_sinPanel2->SetScale(xScale, dPanel->m_sinPanel2->GetYScale());
+    }
 }
 
 void upPanel::OnYScaleChanged(wxCommandEvent &event)
 {
     float yScale = event.GetInt() / 100.0;
     MainFrame *frame = (MainFrame *)m_parent->GetParent();
-    frame->m_dp->m_sinPanel->SetScale(frame->m_dp->m_sinPanel->GetXScale(), yScale);
+    downPanel *dPanel = (downPanel *)frame->m_dp;
+    if (num_of_sinPanels == 1)
+    {
+        dPanel->m_sinPanel1->SetScale(dPanel->m_sinPanel1->GetXScale(), yScale);
+    }
+    else if (num_of_sinPanels == 2)
+    {
+        dPanel->m_sinPanel1->SetScale(dPanel->m_sinPanel1->GetXScale(), yScale);
+        dPanel->m_sinPanel2->SetScale(dPanel->m_sinPanel2->GetXScale(), yScale);
+    }
+    
 }
 
-downPanel::downPanel(wxPanel *parent) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL)
+downPanel::downPanel(wxPanel *parent, int num_of_drawingPanels) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL), 
+                                                                  num_of_sinPanels(num_of_drawingPanels)
 {
-    m_bsizer2 = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
 
-    m_vecPanel = new VectorPanel(this);
-    m_bsizer2->Add(m_vecPanel, 1, wxALIGN_CENTER | wxALL | wxSHAPED, 15);
+    m_leftPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 
-    m_sinPanel = new SinusoidalPanel(this);
-    m_bsizer2->Add(m_sinPanel, 3, wxALL | wxEXPAND, 15);
+    wxBoxSizer* vbox1 = new wxBoxSizer(wxVERTICAL);
 
-    this->SetSizer(m_bsizer2);
+    m_vecPanel = new VectorPanel(m_leftPanel);
+    vbox1->Add( m_vecPanel, 1, wxALIGN_CENTER|wxALL|wxSHAPED, 15 );
+
+    m_leftPanel->SetSizer(vbox1);
+	m_leftPanel->Layout();
+    vbox1->Fit(m_leftPanel);
+    hbox->Add( m_leftPanel, 1, wxEXPAND | wxALL, 5 );
+
+    m_rightPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+
+	wxBoxSizer* vbox2 = new wxBoxSizer( wxVERTICAL );
+
+    if (num_of_sinPanels == 1)
+    {
+        m_sinPanel1 = new SinusoidalPanel(m_rightPanel);
+        vbox2->Add( m_sinPanel1, 1, wxALL|wxEXPAND, 15 );
+    }
+    else if (num_of_sinPanels == 2)
+    {
+        m_sinPanel1 = new SinusoidalPanel(m_rightPanel);
+        vbox2->Add( m_sinPanel1, 1, wxALL|wxEXPAND, 15 );
+
+        m_sinPanel2 = new SinusoidalPanel(m_rightPanel);
+        vbox2->Add( m_sinPanel2, 1, wxALL|wxEXPAND, 15 );
+    }
+
+    m_rightPanel->SetSizer( vbox2 );
+	m_rightPanel->Layout();
+	vbox2->Fit( m_rightPanel );
+
+    hbox->Add( m_rightPanel, 3, wxEXPAND | wxALL, 5 );
+
+    this->SetSizer(hbox);
     this->Layout();
-    m_bsizer2->Fit(this);
+    hbox->Fit(this);
 }

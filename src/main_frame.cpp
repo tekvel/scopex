@@ -1,7 +1,9 @@
 #include "main_frame.h"
 #include "main.h"
 
-MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
+MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) 
+			: wxFrame(parent, id, title, pos, size, style),
+			  num_of_drawingPanels(1)
 {
 	// this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	m_parent = new wxPanel(this, wxID_ANY);
@@ -62,10 +64,10 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 
-	m_up = new upPanel(m_parent);
+	m_up = new upPanel(m_parent, num_of_drawingPanels);
 	topSizer->Add(m_up, 1, wxEXPAND | wxALL, 5);
 
-	m_dp = new downPanel(m_parent);
+	m_dp = new downPanel(m_parent, num_of_drawingPanels);
 	topSizer->Add(m_dp, 5, wxEXPAND | wxALL, 5);
 
 	m_parent->SetSizer(topSizer);
@@ -94,6 +96,24 @@ MainFrame::~MainFrame()
 
 	// now wait for them to really terminate
 	wxGetApp().m_semAllDone.Wait();
+}
+
+void MainFrame::RefreshPanels()
+{
+    // Clear the existing sizer and delete the existing panels
+    m_parent->GetSizer()->Clear(true);
+
+    // Create new instances of upPanel and downPanel with the correct number of panels
+    m_up = new upPanel(m_parent, num_of_drawingPanels);
+    m_parent->GetSizer()->Add(m_up, 1, wxEXPAND | wxALL, 5);
+
+    m_dp = new downPanel(m_parent, num_of_drawingPanels);
+    m_parent->GetSizer()->Add(m_dp, 5, wxEXPAND | wxALL, 5);
+
+    // Re-layout the sizer
+    m_parent->GetSizer()->Layout();
+    m_parent->Layout();
+    this->Layout(); // Ensure the main frame also updates its layout
 }
 
 void MainFrame::OnQuit(wxCommandEvent &event)
@@ -173,11 +193,30 @@ void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 
 	if (it != wxGetApp().sv_sub.sv_list->end())
 	{
+		auto DatSet = it->DatSet;
+		
 		std::cout << "APPID: " << it->APPID << std::endl;
 		std::string svID (it->svID.begin(), it->svID.end());
 		std::cout << "SVID: " << svID << std::endl;
 		std::cout << "noASDU: " << static_cast<int>(it->noASDU) << std::endl;
 		std::cout << "F: " << it->F << std::endl;
 		std::cout << "DatSet: " << static_cast<int>(it->DatSet) << std::endl;
+
+		if ((DatSet == 8) || (DatSet == 6))
+		{
+			if (num_of_drawingPanels == 1)
+			{
+				num_of_drawingPanels = 2;
+				RefreshPanels();
+			}
+		}
+		else
+		{
+			if (num_of_drawingPanels == 2)
+			{
+				num_of_drawingPanels = 1;
+				RefreshPanels();
+			}
+		}
 	}
 }
