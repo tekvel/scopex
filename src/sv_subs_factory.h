@@ -81,6 +81,7 @@ public:
     void select_sv_streams();
     void delete_sv_streams();
     u_int64_t get_closer_freq(double raw_F);
+    long find_sv_id(const SV_stream &sv);
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list_raw;
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list;

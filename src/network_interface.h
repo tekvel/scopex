@@ -69,5 +69,6 @@ private:
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 #endif // NETWORK_INTERFACE_H

@@ -47,9 +47,9 @@ wxThread::ExitCode SVHandlerThread::Entry()
             break;
         
         
-        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "got_packet", 100);
+        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 100);
 
-        wxThread::Sleep(2000);
+        wxThread::Sleep(5000);
     }
 
     std::cout << "Thread finished!" << std::endl;
