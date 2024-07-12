@@ -45,6 +45,8 @@ public:
     void OnStop(wxCommandEvent &event);
     void OnComboBoxSelect(wxCommandEvent &event);
 
+    void OnDataProcessed(wxThreadEvent &event);
+
     void RefreshPanels();
     void EnableTools(bool enable);
 
@@ -59,7 +61,8 @@ enum
     wxID_SAVE_TOOLBOX,
     wxID_PLAY_TOOLBOX,
     wxID_STOP_TOOLBOX,
-    wxID_COMBO_BOX_TOOLBOX
+    wxID_COMBO_BOX_TOOLBOX,
+    wxID_EVT_DATA_SUCCESSFULLY_PROCESSED
 };
 
 #endif

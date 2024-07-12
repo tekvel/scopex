@@ -134,7 +134,7 @@ long SVSubscribe::find_sv_id(const SV_stream &sv)
                 selected_sv.svID == sv.svID &&
                 selected_sv.DatSet == sv.DatSet)
             {
-                return static_cast<long>(idx);
+                return static_cast<long>(selectedSV_ids->at(idx));
             }
         }
     }

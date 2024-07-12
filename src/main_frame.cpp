@@ -61,7 +61,10 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnSave, this, wxID_SAVE_TOOLBOX);						// EVT_Save
 	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnPlay, this, wxID_PLAY_TOOLBOX);						// EVT_Play
 	Bind(wxEVT_COMMAND_TOOL_CLICKED, &MainFrame::OnStop, this, wxID_STOP_TOOLBOX);						// EVT_Stop
-	Bind(wxEVT_COMBOBOX, &MainFrame::OnComboBoxSelect, this, wxID_COMBO_BOX_TOOLBOX);	// EVT_ComboBoxSelection
+	Bind(wxEVT_COMBOBOX, &MainFrame::OnComboBoxSelect, this, wxID_COMBO_BOX_TOOLBOX);					// EVT_ComboBoxSelection
+
+	// Thread events
+	Bind(wxEVT_THREAD, &MainFrame::OnDataProcessed, this, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -219,4 +222,9 @@ void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 			}
 		}
 	}
+}
+
+void MainFrame::OnDataProcessed(wxThreadEvent &event)
+{
+	// Here start to refresh drawing panels
 }

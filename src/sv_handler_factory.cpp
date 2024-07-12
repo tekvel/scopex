@@ -15,9 +15,8 @@ void SVHandlerFactory::CreateHandler(long sv_index)
 {
     if (handlers.find(sv_index) == handlers.end())
     {
-        auto id = wxGetApp().sv_sub.selectedSV_ids->at(sv_index);
         auto it = wxGetApp().sv_sub.sv_list->begin();
-        std::advance(it, id);
+        std::advance(it, sv_index);
 
         if (it != wxGetApp().sv_sub.sv_list->end())
         {
@@ -25,6 +24,8 @@ void SVHandlerFactory::CreateHandler(long sv_index)
             auto F = it->F;
 
             handlers[sv_index] = std::make_shared<SVHandler>(F, DatSet);
+
+            std::cout << "Handler is created!" << std::endl;
         }
     }
 }

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cstdint>
+#include <utility>
 
 #define CURRENT_SCALE 1000
 #define VOLTAGE_SCALE 100
@@ -40,8 +41,11 @@ public:
 
     void ProcessData();
 
-    std::vector<std::pair<uint16_t, std::vector<uint8_t>>> SV_data_raw;
+    std::vector<std::pair<uint16_t, std::vector<uint32_t>>> SV_data_raw;
     std::vector<SV> SV_data;
+
+private:
+    uint8_t num_of_meas;
 };
 
 #endif

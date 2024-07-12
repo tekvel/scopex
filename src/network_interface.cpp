@@ -523,11 +523,17 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                         {
                                             u_char seqData_len = sv_data[offset + i*ASDU_len + 18 + svID_len];
                                             stream.DatSet = seqData_len / 8;
+                                            std::vector<u_int32_t> seqData(seqData_len/4);
+                                            memcpy(seqData.data(), (sv_data + offset + i*ASDU_len + 19 + svID_len), seqData_len/4 * sizeof(u_int32_t));
                                             // 
-                                            long idx = wxGetApp().sv_sub.find_sv_id(stream);
+                                            auto idx = wxGetApp().sv_sub.find_sv_id(stream);
                                             if (idx != -1)
                                             {
-                                                std::cout << idx << std::endl;
+                                                // auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
+                                                auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
+
+                                                sv_handler_ptr->SV_data_raw.push_back(std::make_pair(smpCnt, seqData));
+                                                // sv_handler_ptr->SV_data_raw[smpCnt] = {smpCnt, seqData};
                                             }
                                             //
                                         }

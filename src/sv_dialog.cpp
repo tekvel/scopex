@@ -125,6 +125,8 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
             }
 
             wxGetApp().GetMainFrame()->toolComboBox->Append(SV_Stream);
+
+            wxGetApp().sv_handler.CreateHandler(index);
         }
 
         wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
@@ -154,9 +156,7 @@ void SVSelectionDialog::OnUpdate(wxCommandEvent &event)
 
 void SVSelectionDialog::OnSearchComplete(wxThreadEvent &event)
 {
-    // std::cout << "yeah, event is working!!!" << std::endl;
     m_buttonUpdate->Enable(true);
-
     UpdateSVList();
 }
 

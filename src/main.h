@@ -6,6 +6,7 @@
 #include "main_frame.h"
 #include "network_interface.h"
 #include "sv_subs_factory.h"
+#include "sv_handler_factory.h"
 
 WX_DEFINE_ARRAY_PTR(wxThread *, wxArrayThread);
 
@@ -33,6 +34,8 @@ public:
     NIF network_interface;
 
     SVSubscribe sv_sub;
+
+    SVHandlerFactory sv_handler;
 
     MainFrame *GetMainFrame() { return frame; }
 
