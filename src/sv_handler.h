@@ -5,13 +5,16 @@
 #include <vector>
 #include <cstdint>
 #include <utility>
+#include <algorithm>
+
+#include <arpa/inet.h>
 
 #define CURRENT_SCALE 1000
 #define VOLTAGE_SCALE 100
 
 struct PhsMeas
 {
-    uint32_t secData;
+    int32_t secData;
     uint32_t q;
 };
 
@@ -23,7 +26,7 @@ struct SV
         float usec;
     } utcTime;
 
-    uint8_t smpCnt;
+    uint16_t smpCnt;
 
     std::vector<PhsMeas> PhsMeasList;
 
@@ -36,7 +39,7 @@ struct SV
 class SVHandler
 {
 public:
-    SVHandler(uint64_t max_smpCnt, uint8_t DatSet);
+    SVHandler(uint64_t max_smpCnt, uint16_t DatSet);
     ~SVHandler();
 
     void ProcessData();
@@ -45,7 +48,10 @@ public:
     std::vector<SV> SV_data;
 
 private:
-    uint8_t num_of_meas;
+    uint16_t num_of_meas;
 };
+
+bool comparePairs(const std::pair<uint16_t, std::vector<uint32_t>>& a,
+                  const std::pair<uint16_t, std::vector<uint32_t>>& b);
 
 #endif

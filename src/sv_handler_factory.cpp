@@ -43,3 +43,20 @@ void SVHandlerFactory::DeleteHandlers()
 {
     handlers.clear();
 }
+
+size_t SVHandlerFactory::GetNumberOfHandlers()
+{
+    return handlers.size();
+}
+
+std::vector<long> SVHandlerFactory::GetListOfSVIndices()
+{
+    std::vector<long> keys;
+
+    for (auto &kv : handlers)
+    {
+        // std::cout << kv.first << std::endl;
+        keys.push_back(kv.first);
+    }
+    return keys;
+}

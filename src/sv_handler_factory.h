@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "sv_handler.h"
 
@@ -14,6 +15,8 @@ public:
 
     void CreateHandler(long sv_index);
     std::shared_ptr<SVHandler> GetSVHandler(long sv_index);
+    size_t GetNumberOfHandlers();
+    std::vector<long> GetListOfSVIndices();
     void DeleteHandlers();
     
 private:

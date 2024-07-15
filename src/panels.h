@@ -5,6 +5,7 @@
 #include <wx/panel.h>
 #include "sinusoidal_panel.h"
 #include "vector_panel.h"
+#include "drawing_panel.h"
 
 class upPanel : public wxPanel
 {
@@ -34,6 +35,7 @@ public:
     VectorPanel *m_vecPanel;
     SinusoidalPanel *m_sinPanel1;
     SinusoidalPanel *m_sinPanel2;
+    DrawingPanel *m_drawingPanel;
     wxPanel *m_leftPanel;
     wxPanel *m_rightPanel;
 

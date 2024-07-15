@@ -83,8 +83,6 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 
 MainFrame::~MainFrame()
 {
-	// wxLog::SetActiveTarget(m_oldLogger);
-
 	{
 		wxCriticalSectionLocker locker(wxGetApp().m_critsect);
 
@@ -148,7 +146,6 @@ void MainFrame::OnAbout(wxCommandEvent &event)
 void MainFrame::OnNetworkSelect(wxCommandEvent &event)
 {
 	NIF_dialog = new NetworkSelectionDialog("Network Selection Dialog");
-	// NIF_dialog->Show();
 	NIF_dialog->ShowModal();
 	NIF_dialog->Destroy();
 }
@@ -156,7 +153,6 @@ void MainFrame::OnNetworkSelect(wxCommandEvent &event)
 void MainFrame::OnSVSelect(wxCommandEvent &event)
 {
 	SV_dialog = new SVSelectionDialog(this, "SV Selection Dialog");
-	// SV_dialog->Show();
 	SV_dialog->ShowModal();
 	SV_dialog->Destroy();
 }
@@ -182,6 +178,7 @@ void MainFrame::OnPlay(wxCommandEvent &event)
 		return;
 	}
 	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, false);	// Disable Play tool
+	m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, false);	// Disable ComboBox tool
 }
 
 void MainFrame::OnStop(wxCommandEvent &event)
@@ -191,6 +188,7 @@ void MainFrame::OnStop(wxCommandEvent &event)
 	{
 		wxGetApp().m_shuttingDown = true;
 		m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);		// Enable Play tool
+		m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, true);	// Enable ComboBox tool
 	}
 }
 
@@ -226,5 +224,13 @@ void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 
 void MainFrame::OnDataProcessed(wxThreadEvent &event)
 {
-	// Here start to refresh drawing panels
+	if (num_of_drawingPanels == 1)
+	{
+		m_dp->m_drawingPanel->Refresh();
+		m_dp->m_drawingPanel->Update();
+	}
+	else if (num_of_drawingPanels == 2)
+	{
+
+	}
 }
