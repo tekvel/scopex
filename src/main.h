@@ -37,6 +37,8 @@ public:
 
     SVHandlerFactory sv_handler;
 
+    std::chrono::time_point<std::chrono::steady_clock> start;
+
     MainFrame *GetMainFrame() { return frame; }
 
 private:

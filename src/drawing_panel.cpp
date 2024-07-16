@@ -10,8 +10,6 @@ DrawingPanel::DrawingPanel(wxWindow *parent)
 
     SetVirtualSize(14400, 200);
     SetScrollRate(1, 0);
-
-    // this->Unbind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
 }
 
 void DrawingPanel::OnPaint(wxPaintEvent &event)
@@ -55,6 +53,7 @@ void DrawingPanel::Render(wxDC &dc)
 
         if (!sv_handler_ptr->SV_data.empty())
         {
+            // std::cout << "Drawing!!!" << std::endl;
             for (const auto &data : sv_handler_ptr->SV_data)
             {
                 int x = static_cast<int>(data.smpCnt) - offset.x;

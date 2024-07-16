@@ -233,4 +233,7 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 	{
 
 	}
+	auto now = std::chrono::steady_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - wxGetApp().start).count();
+	std::cout << "Elapsed time: " << elapsed << std::endl;
 }

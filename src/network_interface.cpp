@@ -529,11 +529,84 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                             auto idx = wxGetApp().sv_sub.find_sv_id(stream);
                                             if (idx != -1)
                                             {
-                                                // auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
                                                 auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
 
-                                                sv_handler_ptr->SV_data_raw.push_back(std::make_pair(smpCnt, seqData));
+                                                // sv_handler_ptr->SV_data_raw.push_back(std::make_pair(smpCnt, seqData));
                                                 // sv_handler_ptr->SV_data_raw[smpCnt] = {smpCnt, seqData};
+
+                                                if (smpCnt == 0)
+                                                {
+                                                    std::cout << "Time in sec: " << header->ts.tv_sec << std::endl;
+                                                    std::cout << "Time in nsec: " << header->ts.tv_usec << std::endl;
+
+                                                    if (sv_handler_ptr->operating_list == 0)
+                                                    {
+                                                        sv_handler_ptr->operating_list = 1;
+                                                    }
+                                                    else
+                                                    {
+                                                        sv_handler_ptr->operating_list = 0;
+                                                    }
+
+                                                    // auto start = std::chrono::steady_clock::now();
+                                                    wxGetApp().start = std::chrono::steady_clock::now();
+                                                    
+                                                    SVProcessThread *thread = new SVProcessThread;
+                                                    if (thread->Create() != wxTHREAD_NO_ERROR)
+                                                    {
+                                                        std::cerr << "Can't create SVHandler 2 thread!" << std::endl;
+                                                        return;
+                                                    }
+                                                    wxCriticalSectionLocker enter(wxGetApp().m_critsect);
+                                                    wxGetApp().m_threads.Add(thread);
+                                                    if (thread->Run() != wxTHREAD_NO_ERROR)
+                                                    {
+                                                        std::cerr << "Can't start SVHandler 2 thread!" << std::endl;
+                                                        return;
+                                                    }
+
+                                                    // auto now = std::chrono::steady_clock::now();
+                                                    // auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+                                                    // std::cout << elapsed << std::endl;
+
+                                                    sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
+                                                    sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
+
+                                                }
+                                                else
+                                                {
+                                                    if (sv_handler_ptr->reference_ts.first == 0 && sv_handler_ptr->reference_ts.second == 0)
+                                                    {
+                                                        sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
+                                                        sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
+
+                                                        sv_handler_ptr->prev_smpCnt = smpCnt;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (smpCnt == sv_handler_ptr->prev_smpCnt + 1)
+                                                        {
+                                                            sv_handler_ptr->prev_smpCnt = smpCnt;
+                                                            // auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
+                                                            // std::cout << time_diff << std::endl;
+                                                        }
+                                                        else
+                                                        {
+                                                            sv_handler_ptr->prev_smpCnt = smpCnt;
+
+                                                            auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
+
+                                                            if (time_diff > 1)
+                                                            {
+                                                                sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
+                                                                sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                sv_handler_ptr->SV_data_raw[sv_handler_ptr->operating_list][smpCnt] = std::make_pair(smpCnt, seqData);
+
                                             }
                                             //
                                         }

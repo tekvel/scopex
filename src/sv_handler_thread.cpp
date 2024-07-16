@@ -49,20 +49,63 @@ wxThread::ExitCode SVHandlerThread::Entry()
         
         wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 100);
 
-        for (auto &idx : *wxGetApp().sv_sub.selectedSV_ids)
-        {
-            auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
-            std::cout << handler_ptr->SV_data_raw.size() << std::endl;
-            handler_ptr->ProcessData();
-        }
-
-        wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);
-        wxQueueEvent(wxGetApp().GetMainFrame(), event);
-
-        wxThread::Sleep(1000);
+        wxThread::Sleep(10);
     }
 
     std::cout << "Thread finished!" << std::endl;
+
+    return (wxThread::ExitCode)NULL;
+}
+
+SVProcessThread::SVProcessThread()
+{
+}
+
+SVProcessThread::~SVProcessThread()
+{
+    wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+
+    wxArrayThread &threads = wxGetApp().m_threads;
+    threads.Remove(this);
+
+    if (threads.IsEmpty())
+    {
+        if (wxGetApp().m_shuttingDown)
+        {
+            wxGetApp().m_shuttingDown = false;
+
+            wxGetApp().m_semAllDone.Post();
+        }
+    }
+}
+
+wxThread::ExitCode SVProcessThread::Entry()
+{
+    SetName("SV Processing 2 Thread");
+
+    std::cout << "SV Processing 2 Thread started" << std::endl;
+
+   
+    // check if the application is shutting down
+    {
+        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+        if (wxGetApp().m_shuttingDown)
+            return NULL;
+    }
+
+    for (auto &idx : *wxGetApp().sv_sub.selectedSV_ids)
+    {
+        auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
+        // std::cout << handler_ptr->SV_data_raw.size() << std::endl;
+        handler_ptr->ProcessData();
+    }
+        
+    // wxThread::Sleep(50);
+
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);
+    wxQueueEvent(wxGetApp().GetMainFrame(), event);
+
+    std::cout << "Process 2 Thread finished!" << std::endl;
 
     return (wxThread::ExitCode)NULL;
 }

@@ -18,4 +18,15 @@ public:
 private:
 };
 
+class SVProcessThread : public wxThread
+{
+public:
+    SVProcessThread();
+    virtual ~SVProcessThread();
+
+    virtual void *Entry() wxOVERRIDE;
+
+private:
+};
+
 #endif
