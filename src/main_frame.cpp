@@ -64,8 +64,8 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	Bind(wxEVT_COMBOBOX, &MainFrame::OnComboBoxSelect, this, wxID_COMBO_BOX_TOOLBOX);					// EVT_ComboBoxSelection
 
 	// Thread events
-	Bind(wxEVT_THREAD, &MainFrame::OnDataProcessed, this, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);
-	Bind(wxEVT_THREAD, &MainFrame::OnDataNotFound, this, wxID_EVT_DATA_NOT_FOUND);
+	Bind(wxEVT_THREAD, &MainFrame::OnDataProcessed, this, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);	// EVT_DATA_PROCESSED
+	Bind(wxEVT_THREAD, &MainFrame::OnDataNotFound, this, wxID_EVT_DATA_NOT_FOUND);					// EVT_DATA_NOT_FOUND
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -178,7 +178,7 @@ void MainFrame::OnPlay(wxCommandEvent &event)
 		std::cerr << "Can't start SVHandler thread!" << std::endl;
 		return;
 	}
-	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, false);	// Disable Play tool
+	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, false);		// Disable Play tool
 	m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, false);	// Disable ComboBox tool
 }
 
@@ -188,7 +188,7 @@ void MainFrame::OnStop(wxCommandEvent &event)
 	if (!threads.IsEmpty())
 	{
 		wxGetApp().m_shuttingDown = true;
-		m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);		// Enable Play tool
+		m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);			// Enable Play tool
 		m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, true);	// Enable ComboBox tool
 	}
 }
@@ -246,9 +246,26 @@ void MainFrame::OnDataNotFound(wxThreadEvent &event)
 	{
 		wxGetApp().m_shuttingDown = true;
 	}
-	
-	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);		// Enable Play tool
+
+	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);			// Enable Play tool
 	m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, true);	// Enable ComboBox tool
+
+	// Reinitialize SV_Handler attributes
+	for (auto &idx : *wxGetApp().sv_sub.selectedSV_ids)
+	{
+		auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
+		handler_ptr->InitializeAttributes();
+	}
+	// Refresh Drawing Panels
+	if (num_of_drawingPanels == 1)
+	{
+		m_dp->m_drawingPanel->Refresh();
+		m_dp->m_drawingPanel->Update();
+	}
+	else if (num_of_drawingPanels == 2)
+	{
+
+	}
 
 	wxMessageBox(wxT("Can't find selected SV stream in network!\n\nChange SV."), wxT("Stop Displaying"), wxICON_STOP);
 }

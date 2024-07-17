@@ -54,6 +54,7 @@ public:
     SVHandler(uint16_t max_smpCnt, uint16_t DatSet);
     ~SVHandler();
 
+    void InitializeAttributes();
     void ProcessData();
 
     std::vector<std::vector<std::pair<uint16_t, std::vector<uint32_t>>>> SV_data_raw;
@@ -67,6 +68,7 @@ public:
 
 private:
     uint16_t num_of_meas;
+    uint16_t num_of_points;
 };
 
 bool comparePairs(const std::pair<uint16_t, std::vector<uint32_t>>& a,

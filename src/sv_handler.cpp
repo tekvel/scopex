@@ -2,20 +2,30 @@
 #include "main.h"
 
 SVHandler::SVHandler(uint16_t max_smpCnt, uint16_t DatSet)
-    : num_of_meas(DatSet)
+    : num_of_meas(DatSet), num_of_points(max_smpCnt)
 {
-    // SV_data_raw.resize(2);
-    // for (auto& innerVec : SV_data_raw) {
-    //     innerVec.resize(max_smpCnt, SV_raw(DatSet));
-    // }
+    InitializeAttributes();
+    std::cout << max_smpCnt << ", " << DatSet*8 << std::endl;
+}
+
+SVHandler::~SVHandler()
+{
+    SV_data.clear();
+    SV_data_raw.clear();
+}
+
+void SVHandler::InitializeAttributes()
+{
+    SV_data.clear();
+    
     int i = 0;
     SV_data_raw.resize(2);
     for (auto &vectorPair : SV_data_raw) {
-        vectorPair.resize(max_smpCnt);
+        vectorPair.resize(num_of_points);
         for (auto &pair : vectorPair) {
             pair.first = i;
             i += 1;
-            pair.second.resize(DatSet * 2);
+            pair.second.resize(num_of_meas * 2);
         }
     }
 
@@ -25,14 +35,6 @@ SVHandler::SVHandler(uint16_t max_smpCnt, uint16_t DatSet)
     reference_ts.second = 0;
     reference_smpCnt = -1;
     prev_smpCnt = 0;
-
-    std::cout << max_smpCnt << ", " << DatSet*8 << std::endl;
-}
-
-SVHandler::~SVHandler()
-{
-    SV_data.clear();
-    SV_data_raw.clear();
 }
 
 void SVHandler::ProcessData()
