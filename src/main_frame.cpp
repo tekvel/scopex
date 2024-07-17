@@ -3,7 +3,8 @@
 
 MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) 
 			: wxFrame(parent, id, title, pos, size, style),
-			  num_of_drawingPanels(1)
+			  num_of_drawingPanels(1),
+			  timer1(this, wxID_EVT_TIMER_DONE)
 {
 	// this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	m_parent = new wxPanel(this, wxID_ANY);
@@ -66,6 +67,9 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	// Thread events
 	Bind(wxEVT_THREAD, &MainFrame::OnDataProcessed, this, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);	// EVT_DATA_PROCESSED
 	Bind(wxEVT_THREAD, &MainFrame::OnDataNotFound, this, wxID_EVT_DATA_NOT_FOUND);					// EVT_DATA_NOT_FOUND
+
+	// Timer events
+	Bind(wxEVT_TIMER, &MainFrame::OnTimer, this, wxID_EVT_TIMER_DONE);	// EVT_TIMER_DONE
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -227,6 +231,7 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 {
 	if (num_of_drawingPanels == 1)
 	{
+		m_dp->m_drawingPanel->isGreen = true;
 		m_dp->m_drawingPanel->Refresh();
 		m_dp->m_drawingPanel->Update();
 	}
@@ -237,6 +242,8 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 	auto now = std::chrono::steady_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - wxGetApp().start).count();
 	std::cout << "Elapsed time: " << elapsed << std::endl;
+
+	timer1.StartOnce(250);
 }
 
 void MainFrame::OnDataNotFound(wxThreadEvent &event)
@@ -268,4 +275,18 @@ void MainFrame::OnDataNotFound(wxThreadEvent &event)
 	}
 
 	wxMessageBox(wxT("Can't find selected SV stream in network!\n\nChange SV."), wxT("Stop Displaying"), wxICON_STOP);
+}
+
+void MainFrame::OnTimer(wxTimerEvent &event)
+{
+	if (num_of_drawingPanels == 1)
+	{
+		m_dp->m_drawingPanel->isGreen = false;
+		m_dp->m_drawingPanel->Refresh();
+		m_dp->m_drawingPanel->Update();
+	}
+	else if (num_of_drawingPanels == 2)
+	{
+
+	}
 }

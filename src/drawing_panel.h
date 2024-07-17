@@ -23,6 +23,8 @@ public:
 
     wxPoint pivotPoint;
 
+    bool isGreen;
+
     wxPoint GetPivotPoint() const { return pivotPoint; }
     void SetPivotPoint(wxPoint pivot);
 

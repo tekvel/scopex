@@ -2,7 +2,8 @@
 #include "main.h"
 
 DrawingPanel::DrawingPanel(wxWindow *parent)
-    : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL)
+    : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL),
+      isGreen(false)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
     this->Bind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
@@ -34,6 +35,25 @@ void DrawingPanel::Render(wxDC &dc)
     dc.SetPen(*wxBLACK_PEN);
     dc.DrawLine(0, centerY, width, centerY);
     dc.DrawLine(centerX, 0, centerX, height);
+
+    // Point "Signal Update"
+    dc.SetPen(*wxBLACK_PEN);
+    dc.DrawRectangle(0, 0, 100, 30);
+    
+    dc.DrawText(wxT("Update:"), wxPoint(5, 5));
+
+    if (isGreen)
+    {
+        dc.SetPen(*wxWHITE_PEN);
+        dc.SetBrush(*wxGREEN_BRUSH);
+        dc.DrawCircle(75, 14, 6);
+    }
+    else
+    {
+        dc.SetPen(*wxWHITE_PEN);
+        dc.SetBrush(*wxRED_BRUSH);
+        dc.DrawCircle(75, 14, 6);
+    }
 
     // Calculate the offset relative to the shift of wxScrolledWindow
     wxPoint offset = GetViewStart();

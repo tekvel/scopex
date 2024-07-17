@@ -35,6 +35,8 @@ public:
     NetworkSelectionDialog *NIF_dialog;
     SVSelectionDialog *SV_dialog;
 
+    wxTimer timer1;
+
     void OnQuit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnStartThread(wxCommandEvent &event);
@@ -47,6 +49,8 @@ public:
 
     void OnDataProcessed(wxThreadEvent &event);
     void OnDataNotFound(wxThreadEvent &event);
+
+    void OnTimer(wxTimerEvent &event);
 
     void RefreshPanels();
     void EnableTools(bool enable);
@@ -64,7 +68,8 @@ enum
     wxID_STOP_TOOLBOX,
     wxID_COMBO_BOX_TOOLBOX,
     wxID_EVT_DATA_SUCCESSFULLY_PROCESSED,
-    wxID_EVT_DATA_NOT_FOUND
+    wxID_EVT_DATA_NOT_FOUND,
+    wxID_EVT_TIMER_DONE
 };
 
 #endif
