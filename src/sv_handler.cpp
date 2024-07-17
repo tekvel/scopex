@@ -8,11 +8,13 @@ SVHandler::SVHandler(uint16_t max_smpCnt, uint16_t DatSet)
     // for (auto& innerVec : SV_data_raw) {
     //     innerVec.resize(max_smpCnt, SV_raw(DatSet));
     // }
+    int i = 0;
     SV_data_raw.resize(2);
     for (auto &vectorPair : SV_data_raw) {
         vectorPair.resize(max_smpCnt);
         for (auto &pair : vectorPair) {
-            pair.first = 0;
+            pair.first = i;
+            i += 1;
             pair.second.resize(DatSet * 2);
         }
     }
@@ -40,26 +42,6 @@ void SVHandler::ProcessData()
     SV_data.clear();    // Clear data buffer
 
     std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list == 0 ? 1 : 0];
-    // std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list];
-
-    // std::sort(data_raw.begin(), data_raw.end(), comparePairs);
-
-    // for (auto &pair : SV_data_raw[operating_list])
-    // {
-    //     pair.first = 0;
-    //     for (auto & val :pair.second)
-    //     {
-    //         val = 0;
-    //     }
-    // }
-    // for (auto &pair : SV_data_raw[operating_list == 0 ? 1 : 0])
-    // {
-    //     pair.first = 0;
-    //     for (auto & val :pair.second)
-    //     {
-    //         val = 0;
-    //     }
-    // }
 
     for (size_t i = 0; i != data_raw.size(); ++i)
     {
@@ -75,6 +57,19 @@ void SVHandler::ProcessData()
         SV_data.push_back(frame_sv);
     }
     std::cout << "Data successfully processed" << std::endl;
+
+    // Clear raw data buffer
+    int i = 0;
+    for (auto &pair : SV_data_raw[operating_list == 0 ? 1 : 0])
+    {
+        pair.first = i;
+        i += 1;
+        for (auto & val :pair.second)
+        {
+            val = 0;
+        }
+    }
+
 }
 
 bool comparePairs(const std::pair<uint16_t, std::vector<uint32_t>>& a,

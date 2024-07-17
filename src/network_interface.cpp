@@ -162,6 +162,7 @@ int NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, in
             return -1;
         }
     }
+    return 0;
 }
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
@@ -531,9 +532,6 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                             {
                                                 auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
 
-                                                // sv_handler_ptr->SV_data_raw.push_back(std::make_pair(smpCnt, seqData));
-                                                // sv_handler_ptr->SV_data_raw[smpCnt] = {smpCnt, seqData};
-
                                                 if (smpCnt == 0)
                                                 {
                                                     std::cout << "Time in sec: " << header->ts.tv_sec << std::endl;
@@ -548,7 +546,6 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                                         sv_handler_ptr->operating_list = 0;
                                                     }
 
-                                                    // auto start = std::chrono::steady_clock::now();
                                                     wxGetApp().start = std::chrono::steady_clock::now();
                                                     
                                                     SVProcessThread *thread = new SVProcessThread;
@@ -564,10 +561,6 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                                         std::cerr << "Can't start SVHandler 2 thread!" << std::endl;
                                                         return;
                                                     }
-
-                                                    // auto now = std::chrono::steady_clock::now();
-                                                    // auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-                                                    // std::cout << elapsed << std::endl;
 
                                                     sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
                                                     sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
@@ -594,6 +587,7 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                                         }
                                                         else
                                                         {
+                                                            // std::cout << "\nsmpCnt_n != smpCnt_n-1 + 1\n" << std::endl;
                                                             sv_handler_ptr->prev_smpCnt = smpCnt;
 
                                                             auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
