@@ -92,19 +92,19 @@ std::string NIF::get_current_device()
     }
 }
 
-void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms)
+int NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms)
 {
     // Compile the filter expression
     if (pcap_compile(handle, &fp, filter_exp, 0, netp) == -1)
     {
         std::cerr << "Couldn't parse filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
-        return;
+        return -1;
     }
     // Apply the compiled filter
     if (pcap_setfilter(handle, &fp) == -1)
     {
         std::cerr << "Couldn't install filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
-        return;
+        return -1;
     }
     
     // Choose callback function
@@ -124,7 +124,7 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
     else
     {
         std::cerr << "Couldn't determine callback function" << std::endl;
-        return;
+        return -1;
     }
 
     auto start = std::chrono::steady_clock::now();
@@ -146,7 +146,7 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
             if (elapsed >= timeout_ms)
             {
                 std::cerr << "Timeout: No packets captured within the specified timeout period of " << timeout_ms << " ms." << std::endl;
-                return;
+                return -2;
             }
 
             // Busy-wait loop to simulate delay of 5 ms
@@ -159,7 +159,7 @@ void NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, i
         else
         {
             std::cerr << "Error in pcap_dispatch: " << pcap_geterr(handle) << std::endl;
-            return;
+            return -1;
         }
     }
 }
@@ -571,6 +571,8 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
 
                                                     sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
                                                     sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
+
+                                                    sv_handler_ptr->prev_smpCnt = smpCnt;
 
                                                 }
                                                 else

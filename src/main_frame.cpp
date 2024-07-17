@@ -65,6 +65,7 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 
 	// Thread events
 	Bind(wxEVT_THREAD, &MainFrame::OnDataProcessed, this, wxID_EVT_DATA_SUCCESSFULLY_PROCESSED);
+	Bind(wxEVT_THREAD, &MainFrame::OnDataNotFound, this, wxID_EVT_DATA_NOT_FOUND);
 
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
@@ -236,4 +237,18 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 	auto now = std::chrono::steady_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - wxGetApp().start).count();
 	std::cout << "Elapsed time: " << elapsed << std::endl;
+}
+
+void MainFrame::OnDataNotFound(wxThreadEvent &event)
+{
+	wxArrayThread &threads = wxGetApp().m_threads;
+	if (!threads.IsEmpty())
+	{
+		wxGetApp().m_shuttingDown = true;
+	}
+	
+	m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);		// Enable Play tool
+	m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, true);	// Enable ComboBox tool
+
+	wxMessageBox(wxT("Can't find selected SV stream in network!\n\nChange SV."), wxT("Stop Displaying"), wxICON_STOP);
 }

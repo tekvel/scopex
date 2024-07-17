@@ -33,6 +33,8 @@ wxThread::ExitCode SVHandlerThread::Entry()
 
     auto filter_exp = wxGetApp().sv_sub.filter_exp;
 
+    int timeout_expired = 0;
+
     while (true)
     {
         // check if the application is shutting down
@@ -46,10 +48,22 @@ wxThread::ExitCode SVHandlerThread::Entry()
         if (TestDestroy())
             break;
         
-        
-        wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 100);
+        if (wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 100) == -2)
+        {
+            timeout_expired += 1;
+        }
+        else
+        {
+            timeout_expired = 0;
+        }
+        if (timeout_expired == 20)
+        {
+            wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_DATA_NOT_FOUND);
+            wxQueueEvent(wxGetApp().GetMainFrame(), event);
+            break;
+        }
 
-        wxThread::Sleep(10);
+        // wxThread::Sleep(10);
     }
 
     std::cout << "Thread finished!" << std::endl;

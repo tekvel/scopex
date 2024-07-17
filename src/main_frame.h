@@ -46,6 +46,7 @@ public:
     void OnComboBoxSelect(wxCommandEvent &event);
 
     void OnDataProcessed(wxThreadEvent &event);
+    void OnDataNotFound(wxThreadEvent &event);
 
     void RefreshPanels();
     void EnableTools(bool enable);
@@ -62,7 +63,8 @@ enum
     wxID_PLAY_TOOLBOX,
     wxID_STOP_TOOLBOX,
     wxID_COMBO_BOX_TOOLBOX,
-    wxID_EVT_DATA_SUCCESSFULLY_PROCESSED
+    wxID_EVT_DATA_SUCCESSFULLY_PROCESSED,
+    wxID_EVT_DATA_NOT_FOUND
 };
 
 #endif

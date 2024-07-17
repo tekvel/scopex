@@ -13,7 +13,7 @@ SVHandler::SVHandler(uint16_t max_smpCnt, uint16_t DatSet)
         vectorPair.resize(max_smpCnt);
         for (auto &pair : vectorPair) {
             pair.first = 0;
-            pair.second.resize(DatSet * 8);
+            pair.second.resize(DatSet * 2);
         }
     }
 
@@ -40,17 +40,26 @@ void SVHandler::ProcessData()
     SV_data.clear();    // Clear data buffer
 
     std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list == 0 ? 1 : 0];
+    // std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list];
 
-    std::sort(data_raw.begin(), data_raw.end(), comparePairs);
+    // std::sort(data_raw.begin(), data_raw.end(), comparePairs);
 
-    for (auto &pair : SV_data_raw[operating_list])
-    {
-        pair.first = 0;
-        for (auto & val :pair.second)
-        {
-            val = 0;
-        }
-    }
+    // for (auto &pair : SV_data_raw[operating_list])
+    // {
+    //     pair.first = 0;
+    //     for (auto & val :pair.second)
+    //     {
+    //         val = 0;
+    //     }
+    // }
+    // for (auto &pair : SV_data_raw[operating_list == 0 ? 1 : 0])
+    // {
+    //     pair.first = 0;
+    //     for (auto & val :pair.second)
+    //     {
+    //         val = 0;
+    //     }
+    // }
 
     for (size_t i = 0; i != data_raw.size(); ++i)
     {

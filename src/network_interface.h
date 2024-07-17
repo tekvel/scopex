@@ -52,7 +52,7 @@ public:
     std::shared_ptr<std::vector<std::string>> get_device_list();
     bool select_device(int id);
     std::string get_current_device();
-    void sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms);
+    int sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms);
 
 private:
     std::shared_ptr<std::vector<std::string>> device_list;
