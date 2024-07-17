@@ -17,7 +17,23 @@ SVHandler::~SVHandler()
 void SVHandler::InitializeAttributes()
 {
     SV_data.clear();
-    
+    // Fill with zeros and resize SV_data
+    SV frame_sv = SV(num_of_meas);
+    frame_sv.smpCnt = 0;
+    frame_sv.utcTime.sec = 0;
+    frame_sv.utcTime.usec = 0;
+    for (auto & data : frame_sv.PhsMeasList)
+    {
+        data.q = 0;
+        data.secData = 0;
+    }
+
+    for (size_t i = 0; i != num_of_points; ++i)
+    {
+        SV_data.push_back(frame_sv);
+    }
+
+    // Resize SV_data_raw
     int i = 0;
     SV_data_raw.resize(2);
     for (auto &vectorPair : SV_data_raw) {
@@ -41,10 +57,27 @@ void SVHandler::ProcessData()
 {
     SV frame_sv = SV(num_of_meas);
     
-    SV_data.clear();    // Clear data buffer
+    // Clear data buffer
+    if (!SV_data.empty())
+    {
+        for (auto &frame : SV_data)
+        {
+            frame.smpCnt = 0;
+            frame.utcTime.sec = 0;
+            frame.utcTime.sec = 0;
 
+            for (auto & data : frame.PhsMeasList)
+            {
+                data.q = 0;
+                data.secData = 0;
+            }
+        }
+    }
+
+    // Create a reference to non-operating list
     std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list == 0 ? 1 : 0];
 
+    // Update SV_data
     for (size_t i = 0; i != data_raw.size(); ++i)
     {
         frame_sv.smpCnt = data_raw[i].first;
@@ -56,7 +89,7 @@ void SVHandler::ProcessData()
             frame_sv.PhsMeasList[j].secData = static_cast<int32_t>(ntohl(data_raw[i].second[j*2]))/CURRENT_SCALE;
             frame_sv.PhsMeasList[j].q = data_raw[i].second[j*2-1];
         }
-        SV_data.push_back(frame_sv);
+        SV_data[i] = frame_sv;
     }
     std::cout << "Data successfully processed" << std::endl;
 
@@ -72,10 +105,4 @@ void SVHandler::ProcessData()
         }
     }
 
-}
-
-bool comparePairs(const std::pair<uint16_t, std::vector<uint32_t>>& a,
-                  const std::pair<uint16_t, std::vector<uint32_t>>& b)
-{
-    return a.first < b.first;
 }

@@ -71,7 +71,4 @@ private:
     uint16_t num_of_points;
 };
 
-bool comparePairs(const std::pair<uint16_t, std::vector<uint32_t>>& a,
-                  const std::pair<uint16_t, std::vector<uint32_t>>& b);
-
 #endif

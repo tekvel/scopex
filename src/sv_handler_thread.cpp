@@ -98,7 +98,6 @@ wxThread::ExitCode SVProcessThread::Entry()
     SetName("SV Processing 2 Thread");
 
     std::cout << "SV Processing 2 Thread started" << std::endl;
-
    
     // check if the application is shutting down
     {
@@ -110,7 +109,6 @@ wxThread::ExitCode SVProcessThread::Entry()
     for (auto &idx : *wxGetApp().sv_sub.selectedSV_ids)
     {
         auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
-        // std::cout << handler_ptr->SV_data_raw.size() << std::endl;
         handler_ptr->ProcessData();
     }
         
