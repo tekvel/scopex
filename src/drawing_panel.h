@@ -12,6 +12,7 @@
 
 #include "sv_handler_factory.h"
 #include "sv_handler.h"
+#include "sv_subs_factory.h"
 
 class DrawingPanel : public wxScrolledWindow
 {

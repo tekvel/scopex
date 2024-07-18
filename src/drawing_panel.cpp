@@ -3,7 +3,9 @@
 
 DrawingPanel::DrawingPanel(wxWindow *parent)
     : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL),
-      isGreen(false)
+      isGreen(false),
+      xScale(0.1), yScale(0.5),
+      pivotPoint(0, 0)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
     this->Bind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
@@ -11,6 +13,14 @@ DrawingPanel::DrawingPanel(wxWindow *parent)
 
     SetVirtualSize(14400, 200);
     SetScrollRate(1, 0);
+}
+
+void DrawingPanel::SetScale(float xScale, float yScale)
+{
+    this->xScale = xScale;
+    this->yScale = yScale;
+
+    Refresh();
 }
 
 void DrawingPanel::OnPaint(wxPaintEvent &event)
@@ -23,52 +33,57 @@ void DrawingPanel::Render(wxDC &dc)
 {
     dc.Clear();
 
-    wxSize size = this->GetSize();
-    int width = size.GetWidth();
-    int height = size.GetHeight();
-
-    // Scaling center point
-    int centerX = width / 2;
-    int centerY = height / 2;
-
-    // Axes
-    dc.SetPen(*wxBLACK_PEN);
-    dc.DrawLine(0, centerY, width, centerY);
-    dc.DrawLine(centerX, 0, centerX, height);
-
-    // Point "Signal Update"
-    dc.SetPen(*wxBLACK_PEN);
-    dc.DrawRectangle(0, 0, 100, 30);
-    
-    dc.DrawText(wxT("Update:"), wxPoint(5, 5));
-
-    if (isGreen)
-    {
-        dc.SetPen(*wxWHITE_PEN);
-        dc.SetBrush(*wxGREEN_BRUSH);
-        dc.DrawCircle(75, 14, 6);
-    }
-    else
-    {
-        dc.SetPen(*wxWHITE_PEN);
-        dc.SetBrush(*wxRED_BRUSH);
-        dc.DrawCircle(75, 14, 6);
-    }
-
-    // Calculate the offset relative to the shift of wxScrolledWindow
-    wxPoint offset = GetViewStart();
-
-    std::vector<wxPoint> scaledPointsA;
-    std::vector<wxPoint> scaledPointsB;
-    std::vector<wxPoint> scaledPointsC;
-
-    pivotPoint.x = centerX + offset.x;
-
     auto sv_indices = wxGetApp().sv_handler.GetListOfSVIndices();
     auto idx = wxGetApp().sv_sub.selectedSV_id_main;
 
     if (sv_indices.size() != 0 && idx != nullptr)
     {
+        auto it = wxGetApp().sv_sub.sv_list->begin();
+	    std::advance(it, *idx);
+
+        wxSize size = this->GetSize();
+        int width = size.GetWidth();
+        int height = size.GetHeight();
+
+        int virtualWidth = static_cast<int>(it->F + width);
+        SetVirtualSize(virtualWidth, 200);
+
+        // Scaling center point
+        int centerX = width / 2;
+        int centerY = height / 2;
+
+        // Axes
+        dc.SetPen(*wxBLACK_PEN);
+        dc.DrawLine(0, centerY, width, centerY);
+        dc.DrawLine(centerX, 0, centerX, height);
+
+        // Point "Signal Update"
+        dc.SetPen(*wxBLACK_PEN);
+        dc.DrawRectangle(0, 0, 100, 30);
+        
+        dc.DrawText(wxT("Update:"), wxPoint(5, 5));
+
+        if (isGreen)
+        {
+            dc.SetPen(*wxWHITE_PEN);
+            dc.SetBrush(*wxGREEN_BRUSH);
+            dc.DrawCircle(75, 14, 6);
+        }
+        else
+        {
+            dc.SetPen(*wxWHITE_PEN);
+            dc.SetBrush(*wxRED_BRUSH);
+            dc.DrawCircle(75, 14, 6);
+        }
+
+        // Calculate the offset relative to the shift of wxScrolledWindow
+        wxPoint offset = GetViewStart();
+
+        std::vector<wxPoint> scaledPointsA;
+        std::vector<wxPoint> scaledPointsB;
+        std::vector<wxPoint> scaledPointsC;
+
+        pivotPoint.x = centerX + offset.x;
         
         auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
 
@@ -77,14 +92,14 @@ void DrawingPanel::Render(wxDC &dc)
             // std::cout << "Drawing!!!" << std::endl;
             for (const auto &data : sv_handler_ptr->SV_data)
             {
-                int x = static_cast<int>(data.smpCnt) - offset.x;
-                int y = static_cast<int>(centerY - data.PhsMeasList[0].secData/10);
+                int x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset.x;
+                int y = static_cast<int>(centerY - (data.PhsMeasList[0].secData/10 * yScale));
                 scaledPointsA.emplace_back(wxPoint(x, y));
-                x = static_cast<int>(data.smpCnt) - offset.x;
-                y = static_cast<int>(centerY - data.PhsMeasList[1].secData/10);
+
+                y = static_cast<int>(centerY - (data.PhsMeasList[1].secData/10 * yScale));
                 scaledPointsB.emplace_back(wxPoint(x, y));
-                x = static_cast<int>(data.smpCnt) - offset.x;
-                y = static_cast<int>(centerY - data.PhsMeasList[2].secData/10);
+                
+                y = static_cast<int>(centerY - (data.PhsMeasList[2].secData/10 * yScale));
                 scaledPointsC.emplace_back(wxPoint(x, y));
                 
             }

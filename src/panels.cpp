@@ -38,12 +38,12 @@ void upPanel::OnXScaleChanged(wxCommandEvent &event)
     downPanel *dPanel = (downPanel *)frame->m_dp;
     if (num_of_sinPanels == 1)
     {
-        dPanel->m_sinPanel1->SetScale(xScale, dPanel->m_sinPanel1->GetYScale());
+        dPanel->m_drawingPanel1->SetScale(xScale, dPanel->m_drawingPanel1->GetYScale());
     }
     else if (num_of_sinPanels == 2)
     {
-        dPanel->m_sinPanel1->SetScale(xScale, dPanel->m_sinPanel1->GetYScale());
-        dPanel->m_sinPanel2->SetScale(xScale, dPanel->m_sinPanel2->GetYScale());
+        dPanel->m_drawingPanel1->SetScale(xScale, dPanel->m_drawingPanel1->GetYScale());
+        dPanel->m_drawingPanel2->SetScale(xScale, dPanel->m_drawingPanel2->GetYScale());
     }
 }
 
@@ -54,12 +54,12 @@ void upPanel::OnYScaleChanged(wxCommandEvent &event)
     downPanel *dPanel = (downPanel *)frame->m_dp;
     if (num_of_sinPanels == 1)
     {
-        dPanel->m_sinPanel1->SetScale(dPanel->m_sinPanel1->GetXScale(), yScale);
+        dPanel->m_drawingPanel1->SetScale(dPanel->m_drawingPanel1->GetXScale(), yScale);
     }
     else if (num_of_sinPanels == 2)
     {
-        dPanel->m_sinPanel1->SetScale(dPanel->m_sinPanel1->GetXScale(), yScale);
-        dPanel->m_sinPanel2->SetScale(dPanel->m_sinPanel2->GetXScale(), yScale);
+        dPanel->m_drawingPanel1->SetScale(dPanel->m_drawingPanel1->GetXScale(), yScale);
+        dPanel->m_drawingPanel2->SetScale(dPanel->m_drawingPanel2->GetXScale(), yScale);
     }
     
 }
