@@ -33,9 +33,8 @@ class downPanel : public wxPanel
 public:
     downPanel(wxPanel *parent, int num_of_drawingPanels);
     VectorPanel *m_vecPanel;
-    SinusoidalPanel *m_sinPanel1;
-    SinusoidalPanel *m_sinPanel2;
-    DrawingPanel *m_drawingPanel;
+    DrawingPanel *m_drawingPanel1;
+    DrawingPanel *m_drawingPanel2;
     wxPanel *m_leftPanel;
     wxPanel *m_rightPanel;
 

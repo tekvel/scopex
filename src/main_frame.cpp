@@ -199,8 +199,15 @@ void MainFrame::OnStop(wxCommandEvent &event)
 
 void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 {
+	// Get ComboBox selection id
 	int idx = toolComboBox->GetSelection();
+
+	// Get id of selected SV stream
 	auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
+	std::shared_ptr<long> selectedSV_id_main = std::make_shared<long>(id);
+	wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;
+
+	// Modify iterator using needed id of selected SV
 	auto it = wxGetApp().sv_sub.sv_list->begin();
 	std::advance(it, id);
 
@@ -231,13 +238,19 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 {
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel->isGreen = true;
-		m_dp->m_drawingPanel->Refresh();
-		m_dp->m_drawingPanel->Update();
+		m_dp->m_drawingPanel1->isGreen = true;
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
+		m_dp->m_drawingPanel1->isGreen = true;
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 
+		m_dp->m_drawingPanel2->isGreen = true;
+		m_dp->m_drawingPanel2->Refresh();
+		m_dp->m_drawingPanel2->Update();
 	}
 	auto now = std::chrono::steady_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - wxGetApp().start).count();
@@ -266,12 +279,16 @@ void MainFrame::OnDataNotFound(wxThreadEvent &event)
 	// Refresh Drawing Panels
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel->Refresh();
-		m_dp->m_drawingPanel->Update();
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 
+		m_dp->m_drawingPanel2->Refresh();
+		m_dp->m_drawingPanel2->Update();
 	}
 
 	wxMessageBox(wxT("Can't find selected SV stream in network!\n\nChange SV."), wxT("Stop Displaying"), wxICON_STOP);
@@ -281,12 +298,18 @@ void MainFrame::OnTimer(wxTimerEvent &event)
 {
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel->isGreen = false;
-		m_dp->m_drawingPanel->Refresh();
-		m_dp->m_drawingPanel->Update();
+		m_dp->m_drawingPanel1->isGreen = false;
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
+		m_dp->m_drawingPanel1->isGreen = false;
+		m_dp->m_drawingPanel1->Refresh();
+		m_dp->m_drawingPanel1->Update();
 
+		m_dp->m_drawingPanel2->isGreen = false;
+		m_dp->m_drawingPanel2->Refresh();
+		m_dp->m_drawingPanel2->Update();
 	}
 }

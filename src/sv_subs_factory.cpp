@@ -115,28 +115,25 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
     }
 }
 
-long SVSubscribe::find_sv_id(const SV_stream &sv)
+bool SVSubscribe::find_sv(const SV_stream &sv)
 {
-    for (size_t idx = 0; idx < selectedSV_ids->size(); ++idx)
+    auto id = selectedSV_ids->at(*selectedSV_id_main);
+    auto it = sv_list->begin();
+    std::advance(it, id);
+
+    if (it != sv_list->end())
     {
-        auto id = selectedSV_ids->at(idx);
-        auto it = sv_list->begin();
-        std::advance(it, id);
+        const SV_stream &selected_sv = *it;
 
-        if (it != sv_list->end())
+        if (std::memcmp(selected_sv.ether_dhost, sv.ether_dhost, ETHER_ADDR_LEN) == 0 &&
+            std::memcmp(selected_sv.ether_shost, sv.ether_shost, ETHER_ADDR_LEN) == 0 &&
+            selected_sv.APPID == sv.APPID &&
+            selected_sv.noASDU == sv.noASDU &&
+            selected_sv.svID == sv.svID &&
+            selected_sv.DatSet == sv.DatSet)
         {
-            const SV_stream &selected_sv = *it;
-
-            if (std::memcmp(selected_sv.ether_dhost, sv.ether_dhost, ETHER_ADDR_LEN) == 0 &&
-                std::memcmp(selected_sv.ether_shost, sv.ether_shost, ETHER_ADDR_LEN) == 0 &&
-                selected_sv.APPID == sv.APPID &&
-                selected_sv.noASDU == sv.noASDU &&
-                selected_sv.svID == sv.svID &&
-                selected_sv.DatSet == sv.DatSet)
-            {
-                return static_cast<long>(selectedSV_ids->at(idx));
-            }
+            return true;
         }
     }
-    return -1;
+    return false;
 }

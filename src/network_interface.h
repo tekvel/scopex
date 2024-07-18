@@ -46,13 +46,15 @@ struct tag_ethernet_header
 class NIF
 {
 public:
-    NIF() : device_list(std::make_shared<std::vector<std::string>>()), devs(nullptr) {}
+    NIF() : device_list(std::make_shared<std::vector<std::string>>()), devs(nullptr), noIrrelevantFrames(0) {}
     ~NIF();
 
     std::shared_ptr<std::vector<std::string>> get_device_list();
     bool select_device(int id);
     std::string get_current_device();
     int sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms);
+
+    int noIrrelevantFrames;
 
 private:
     std::shared_ptr<std::vector<std::string>> device_list;

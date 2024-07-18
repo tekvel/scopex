@@ -105,6 +105,8 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
 
         wxGetApp().GetMainFrame()->toolComboBox->Clear();
 
+        wxGetApp().sv_handler.DeleteHandlers();
+
         for (const auto &index : selectedItems)
         {
             wxString APPID = m_svStreamList->GetItemText(index, 2);

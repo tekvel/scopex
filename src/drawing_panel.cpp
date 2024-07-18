@@ -65,11 +65,12 @@ void DrawingPanel::Render(wxDC &dc)
     pivotPoint.x = centerX + offset.x;
 
     auto sv_indices = wxGetApp().sv_handler.GetListOfSVIndices();
+    auto idx = wxGetApp().sv_sub.selectedSV_id_main;
 
-    if (sv_indices.size() != 0)
+    if (sv_indices.size() != 0 && idx != nullptr)
     {
         
-        auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(sv_indices[0]);
+        auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
 
         if (!sv_handler_ptr->SV_data.empty())
         {

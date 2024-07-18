@@ -527,10 +527,9 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                             std::vector<u_int32_t> seqData(seqData_len/4);
                                             memcpy(seqData.data(), (sv_data + offset + i*ASDU_len + 19 + svID_len), seqData_len/4 * sizeof(u_int32_t));
                                             // 
-                                            auto idx = wxGetApp().sv_sub.find_sv_id(stream);
-                                            if (idx != -1)
+                                            if (wxGetApp().sv_sub.find_sv(stream))
                                             {
-                                                auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(idx);
+                                                auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*wxGetApp().sv_sub.selectedSV_id_main);
 
                                                 if (smpCnt == 0)
                                                 {
@@ -603,6 +602,11 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
 
                                                 sv_handler_ptr->SV_data_raw[sv_handler_ptr->operating_list][smpCnt] = std::make_pair(smpCnt, seqData);
 
+                                            }
+                                            else
+                                            {
+                                                NIF nif;
+                                                nif.noIrrelevantFrames += 1;
                                             }
                                             //
                                         }
