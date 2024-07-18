@@ -563,9 +563,7 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
 
                                                     sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
                                                     sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
-
-                                                    sv_handler_ptr->prev_smpCnt = smpCnt;
-
+                                                    sv_handler_ptr->reference_smpCnt = smpCnt;
                                                 }
                                                 else
                                                 {
@@ -573,35 +571,25 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                                     {
                                                         sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
                                                         sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
-
-                                                        sv_handler_ptr->prev_smpCnt = smpCnt;
+                                                        sv_handler_ptr->reference_smpCnt = smpCnt;
                                                     }
                                                     else
                                                     {
-                                                        if (smpCnt == sv_handler_ptr->prev_smpCnt + 1)
+                                                        if (smpCnt != sv_handler_ptr->prev_smpCnt + 1)
                                                         {
-                                                            sv_handler_ptr->prev_smpCnt = smpCnt;
-                                                            // auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
-                                                            // std::cout << time_diff << std::endl;
-                                                        }
-                                                        else
-                                                        {
-                                                            // std::cout << "\nsmpCnt_n != smpCnt_n-1 + 1\n" << std::endl;
-                                                            sv_handler_ptr->prev_smpCnt = smpCnt;
-
                                                             auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
 
                                                             if (time_diff > 1)
                                                             {
                                                                 sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
                                                                 sv_handler_ptr->reference_ts.second = header->ts.tv_usec;
+                                                                sv_handler_ptr->reference_smpCnt = smpCnt;
                                                             }
                                                         }
                                                     }
                                                 }
-
+                                                sv_handler_ptr->prev_smpCnt = smpCnt;
                                                 sv_handler_ptr->SV_data_raw[sv_handler_ptr->operating_list][smpCnt] = std::make_pair(smpCnt, seqData);
-
                                             }
                                             else
                                             {

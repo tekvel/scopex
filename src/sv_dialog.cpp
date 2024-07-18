@@ -130,6 +130,9 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
 
             wxGetApp().sv_handler.CreateHandler(index);
         }
+        auto id = wxGetApp().sv_sub.selectedSV_ids->at(0);
+        std::shared_ptr<long> selectedSV_id_main = std::make_shared<long>(id);
+        wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;
 
         wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
         wxGetApp().GetMainFrame()->num_of_drawingPanels = num_of_drawingPanels;

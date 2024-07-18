@@ -117,9 +117,8 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
 
 bool SVSubscribe::find_sv(const SV_stream &sv)
 {
-    auto id = selectedSV_ids->at(*selectedSV_id_main);
     auto it = sv_list->begin();
-    std::advance(it, id);
+    std::advance(it, *selectedSV_id_main);
 
     if (it != sv_list->end())
     {
