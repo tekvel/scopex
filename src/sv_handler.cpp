@@ -84,11 +84,28 @@ void SVHandler::ProcessData()
         frame_sv.utcTime.sec = 110;
         frame_sv.utcTime.usec = 234322;
 
-        for (int j = 0; j != num_of_meas; ++j)
+        if (num_of_meas > 4)
         {
-            frame_sv.PhsMeasList[j].secData = static_cast<int32_t>(ntohl(data_raw[i].second[j*2]))/CURRENT_SCALE;
-            frame_sv.PhsMeasList[j].q = data_raw[i].second[j*2-1];
+            for (auto j = 0; j != num_of_meas/2; ++j)
+            {
+                frame_sv.PhsMeasList[j].secData = static_cast<int32_t>(ntohl(data_raw[i].second[j*2]))/CURRENT_SCALE;
+                frame_sv.PhsMeasList[j].q = data_raw[i].second[j*2-1];
+            }
+            for (auto j = num_of_meas/2; j != num_of_meas; ++j)
+            {
+                frame_sv.PhsMeasList[j].secData = static_cast<int32_t>(ntohl(data_raw[i].second[j*2]))/VOLTAGE_SCALE;
+                frame_sv.PhsMeasList[j].q = data_raw[i].second[j*2-1];
+            }
         }
+        else
+        {
+            for (auto j = 0; j != num_of_meas; ++j)
+            {
+                frame_sv.PhsMeasList[j].secData = static_cast<int32_t>(ntohl(data_raw[i].second[j*2]))/CURRENT_SCALE;
+                frame_sv.PhsMeasList[j].q = data_raw[i].second[j*2-1];
+            }
+        }
+        
         SV_data[i] = frame_sv;
     }
     std::cout << "Data successfully processed" << std::endl;

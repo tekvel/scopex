@@ -87,15 +87,15 @@ downPanel::downPanel(wxPanel *parent, int num_of_drawingPanels) : wxPanel(parent
 
     if (num_of_sinPanels == 1)
     {
-        m_drawingPanel1 = new DrawingPanel(m_rightPanel);
+        m_drawingPanel1 = new DrawingPanel(m_rightPanel, 0);
         vbox2->Add( m_drawingPanel1, 1, wxALL|wxEXPAND, 15 );
     }
     else if (num_of_sinPanels == 2)
     {   
-        m_drawingPanel1 = new DrawingPanel(m_rightPanel);
+        m_drawingPanel1 = new DrawingPanel(m_rightPanel, 0);
         vbox2->Add( m_drawingPanel1, 1, wxALL|wxEXPAND, 15 );
 
-        m_drawingPanel2 = new DrawingPanel(m_rightPanel);
+        m_drawingPanel2 = new DrawingPanel(m_rightPanel, 1);
         vbox2->Add( m_drawingPanel2, 1, wxALL|wxEXPAND, 15 );
     }
 

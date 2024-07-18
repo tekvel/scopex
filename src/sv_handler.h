@@ -9,12 +9,12 @@
 
 #include <arpa/inet.h>
 
-#define CURRENT_SCALE 1000
-#define VOLTAGE_SCALE 100
+#define CURRENT_SCALE 1000.0
+#define VOLTAGE_SCALE 100.0
 
 struct PhsMeas
 {
-    int32_t secData;
+    float secData;
     uint32_t q;
 };
 

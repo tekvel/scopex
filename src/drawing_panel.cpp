@@ -1,8 +1,9 @@
 #include "drawing_panel.h"
 #include "main.h"
 
-DrawingPanel::DrawingPanel(wxWindow *parent)
+DrawingPanel::DrawingPanel(wxWindow *parent, int position)
     : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxVSCROLL),
+      pos(position),
       isGreen(false),
       xScale(0.1), yScale(0.5),
       pivotPoint(0, 0)
@@ -41,11 +42,14 @@ void DrawingPanel::Render(wxDC &dc)
         auto it = wxGetApp().sv_sub.sv_list->begin();
 	    std::advance(it, *idx);
 
+        auto number_of_points = it->F;
+        auto number_of_meas = it->DatSet;
+
         wxSize size = this->GetSize();
         int width = size.GetWidth();
         int height = size.GetHeight();
 
-        int virtualWidth = static_cast<int>(it->F + width);
+        int virtualWidth = static_cast<int>(number_of_points + width);
         SetVirtualSize(virtualWidth, 200);
 
         // Scaling center point
@@ -57,25 +61,28 @@ void DrawingPanel::Render(wxDC &dc)
         dc.DrawLine(0, centerY, width, centerY);
         dc.DrawLine(centerX, 0, centerX, height);
 
-        // Point "Signal Update"
-        dc.SetPen(*wxBLACK_PEN);
-        dc.DrawRectangle(0, 0, 100, 30);
+        // Display Point "Signal Update" if pos = 0 (up drawing panel)
+        if (pos == 0)
+        {
+            dc.SetPen(*wxBLACK_PEN);
+            dc.DrawRectangle(0, 0, 100, 30);
+            
+            dc.DrawText(wxT("Update:"), wxPoint(5, 5));
+
+            if (isGreen)
+            {
+                dc.SetPen(*wxWHITE_PEN);
+                dc.SetBrush(*wxGREEN_BRUSH);
+                dc.DrawCircle(75, 14, 6);
+            }
+            else
+            {
+                dc.SetPen(*wxWHITE_PEN);
+                dc.SetBrush(*wxRED_BRUSH);
+                dc.DrawCircle(75, 14, 6);
+            }
+        }
         
-        dc.DrawText(wxT("Update:"), wxPoint(5, 5));
-
-        if (isGreen)
-        {
-            dc.SetPen(*wxWHITE_PEN);
-            dc.SetBrush(*wxGREEN_BRUSH);
-            dc.DrawCircle(75, 14, 6);
-        }
-        else
-        {
-            dc.SetPen(*wxWHITE_PEN);
-            dc.SetBrush(*wxRED_BRUSH);
-            dc.DrawCircle(75, 14, 6);
-        }
-
         // Calculate the offset relative to the shift of wxScrolledWindow
         wxPoint offset = GetViewStart();
 
@@ -93,13 +100,13 @@ void DrawingPanel::Render(wxDC &dc)
             for (const auto &data : sv_handler_ptr->SV_data)
             {
                 int x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset.x;
-                int y = static_cast<int>(centerY - (data.PhsMeasList[0].secData/10 * yScale));
+                int y = static_cast<int>(centerY - (data.PhsMeasList[0 + number_of_meas/2 * pos].secData/10 * yScale));
                 scaledPointsA.emplace_back(wxPoint(x, y));
 
-                y = static_cast<int>(centerY - (data.PhsMeasList[1].secData/10 * yScale));
+                y = static_cast<int>(centerY - (data.PhsMeasList[1 + number_of_meas/2 * pos].secData/10 * yScale));
                 scaledPointsB.emplace_back(wxPoint(x, y));
-                
-                y = static_cast<int>(centerY - (data.PhsMeasList[2].secData/10 * yScale));
+
+                y = static_cast<int>(centerY - (data.PhsMeasList[2 + number_of_meas/2 * pos].secData/10 * yScale));
                 scaledPointsC.emplace_back(wxPoint(x, y));
                 
             }

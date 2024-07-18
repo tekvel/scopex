@@ -17,7 +17,9 @@
 class DrawingPanel : public wxScrolledWindow
 {
 public:
-    DrawingPanel(wxWindow *parent);
+    DrawingPanel(wxWindow *parent, int position);
+
+    int pos;    // Position of DrawingPanel: 1 - down (Voltages), 0 - up (Currents)
 
     float xScale;
     float yScale;
