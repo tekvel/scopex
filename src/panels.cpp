@@ -112,20 +112,21 @@ downPanel::downPanel(wxPanel *parent, int num_of_drawingPanels) : wxPanel(parent
 
 void downPanel::SynchronizeScroll(DrawingPanel* source, int newPosition)
 {
-    if (source == m_drawingPanel1 && m_drawingPanel2 != nullptr)
+    if (num_of_sinPanels == 2)
     {
-        wxPoint prevPosition = m_drawingPanel2->GetPosition();
-        m_drawingPanel2->SetScrollPos(wxHORIZONTAL, newPosition, true);
-        // m_drawingPanel2->Move(newPosition, prevPosition.y, 0);
-        m_drawingPanel2->Refresh();
-        m_drawingPanel2->Update();
-    }
-    else if (source == m_drawingPanel2 && m_drawingPanel1 != nullptr)
-    {
-        wxPoint prevPosition = m_drawingPanel1->GetPosition();
-        m_drawingPanel1->SetScrollPos(wxHORIZONTAL, newPosition, true);
-        // m_drawingPanel1->Move(newPosition, prevPosition.y, 0);
-        m_drawingPanel1->Refresh();
-        m_drawingPanel1->Update();
+        if (source == m_drawingPanel1 && m_drawingPanel2 != nullptr)
+        {
+            wxPoint prevPosition = m_drawingPanel2->GetPosition();
+            m_drawingPanel2->SetScrollPos(wxHORIZONTAL, newPosition, true);
+            m_drawingPanel2->Refresh();
+            m_drawingPanel2->Update();
+        }
+        else if (source == m_drawingPanel2 && m_drawingPanel1 != nullptr)
+        {
+            wxPoint prevPosition = m_drawingPanel1->GetPosition();
+            m_drawingPanel1->SetScrollPos(wxHORIZONTAL, newPosition, true);
+            m_drawingPanel1->Refresh();
+            m_drawingPanel1->Update();
+        }
     }
 }

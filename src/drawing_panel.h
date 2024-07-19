@@ -41,6 +41,7 @@ private:
 
     void OnMouseMotion(wxMouseEvent &event);
     void OnScroll(wxScrollWinEvent &event);
+    void OnMouseWheel(wxMouseEvent &event);
 
     wxWindow *m_parent;
     wxPoint m_cursorPosition;

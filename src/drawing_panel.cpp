@@ -11,8 +11,15 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
     m_parent = this->GetParent();
 
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
+
+    // Bind paint event
     this->Bind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
+
+    // Bind mouse motion event
     this->Bind(wxEVT_MOTION, &DrawingPanel::OnMouseMotion, this);
+
+    // Bind mouse wheel event
+    this->Bind(wxEVT_MOUSEWHEEL, &DrawingPanel::OnMouseWheel, this);
 
     // Bind scroll events
     this->Bind(wxEVT_SCROLLWIN_THUMBTRACK, &DrawingPanel::OnScroll, this);
@@ -160,6 +167,22 @@ void DrawingPanel::OnScroll(wxScrollWinEvent &event)
 {
     int newPosition = GetScrollPos(wxHORIZONTAL);
     wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newPosition);
+
+    event.Skip();
+}
+
+void DrawingPanel::OnMouseWheel(wxMouseEvent &event)
+{
+    int rotation = event.GetWheelRotation();
+    int linesPerRotation = event.GetLinesPerAction();
+    int scrollAmount = rotation / event.GetWheelDelta() * linesPerRotation * 10;
+
+    int newScrollPos = GetScrollPos(wxHORIZONTAL) - scrollAmount;
+
+    SetScrollPos(wxHORIZONTAL, newScrollPos, true);
+    wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newScrollPos);
+
+    Refresh();
 
     event.Skip();
 }
