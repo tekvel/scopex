@@ -8,9 +8,18 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
       xScale(0.1), yScale(0.5),
       pivotPoint(0, 0)
 {
+    m_parent = this->GetParent();
+
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
     this->Bind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
     this->Bind(wxEVT_MOTION, &DrawingPanel::OnMouseMotion, this);
+
+    // Bind scroll events
+    this->Bind(wxEVT_SCROLLWIN_THUMBTRACK, &DrawingPanel::OnScroll, this);
+    this->Bind(wxEVT_SCROLLWIN_LINEUP, &DrawingPanel::OnScroll, this);
+    this->Bind(wxEVT_SCROLLWIN_LINEDOWN, &DrawingPanel::OnScroll, this);
+    this->Bind(wxEVT_SCROLLWIN_PAGEUP, &DrawingPanel::OnScroll, this);
+    this->Bind(wxEVT_SCROLLWIN_PAGEDOWN, &DrawingPanel::OnScroll, this);
 
     SetVirtualSize(14400, 200);
     SetScrollRate(1, 0);
@@ -84,13 +93,13 @@ void DrawingPanel::Render(wxDC &dc)
         }
         
         // Calculate the offset relative to the shift of wxScrolledWindow
-        wxPoint offset = GetViewStart();
+        int offset_x = GetScrollPos(wxHORIZONTAL);
 
         std::vector<wxPoint> scaledPointsA;
         std::vector<wxPoint> scaledPointsB;
         std::vector<wxPoint> scaledPointsC;
 
-        pivotPoint.x = centerX + offset.x;
+        pivotPoint.x = centerX + offset_x;
         
         auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
 
@@ -99,7 +108,7 @@ void DrawingPanel::Render(wxDC &dc)
             // std::cout << "Drawing!!!" << std::endl;
             for (const auto &data : sv_handler_ptr->SV_data)
             {
-                int x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset.x;
+                int x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset_x;
                 int y = static_cast<int>(centerY - (data.PhsMeasList[0 + number_of_meas/2 * pos].secData/10 * yScale));
                 scaledPointsA.emplace_back(wxPoint(x, y));
 
@@ -134,7 +143,7 @@ void DrawingPanel::Render(wxDC &dc)
             dc.DrawLine(m_cursorPosition.x, 0, m_cursorPosition.x, height);
 
             // Draw the cursor coordinates as a string
-            wxString positionString = wxString::Format("(%d, %d)", (m_cursorPosition.x + offset.x), m_cursorPosition.y);
+            wxString positionString = wxString::Format("(%d, %d)", (m_cursorPosition.x + offset_x), m_cursorPosition.y);
             dc.DrawText(positionString, m_cursorPosition.x + 15, m_cursorPosition.y + 15);
         }
     }
@@ -145,4 +154,12 @@ void DrawingPanel::OnMouseMotion(wxMouseEvent &event)
     // Get the cursor coordinates relative to the panel
     m_cursorPosition = event.GetPosition();
     Refresh();
+}
+
+void DrawingPanel::OnScroll(wxScrollWinEvent &event)
+{
+    int newPosition = GetScrollPos(wxHORIZONTAL);
+    wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newPosition);
+
+    event.Skip();
 }

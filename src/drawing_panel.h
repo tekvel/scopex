@@ -40,6 +40,9 @@ private:
     void Render(wxDC &dc);
 
     void OnMouseMotion(wxMouseEvent &event);
+    void OnScroll(wxScrollWinEvent &event);
+
+    wxWindow *m_parent;
     wxPoint m_cursorPosition;
 };
 
