@@ -79,7 +79,7 @@ public:
     ~SVSubscribe() {}
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> get_sv_list();
-    void select_sv_streams();
+    void create_bpf_filter();
     void delete_sv_streams();
     u_int64_t get_closer_freq(double raw_F);
     bool find_sv(const SV_stream &sv);

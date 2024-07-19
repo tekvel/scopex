@@ -32,9 +32,9 @@ void SVSubscribe::delete_sv_streams()
 
 }
 
-void SVSubscribe::select_sv_streams()
+void SVSubscribe::create_bpf_filter()
 {
-    if (selectedSV_ids->empty())
+    if (selectedSV_id_main == nullptr)
     {
         std::cerr << "SV Stream is not selected!" << std::endl;
         return;
@@ -43,44 +43,36 @@ void SVSubscribe::select_sv_streams()
     std::ostringstream filter_stream;
     filter_stream << "(";
 
-    for (size_t idx = 0; idx < selectedSV_ids->size(); ++idx)
+    auto it = sv_list->begin();
+    std::advance(it, *selectedSV_id_main);
+
+    if (it != sv_list->end())
     {
-        auto id = selectedSV_ids->at(idx);
-        auto it = sv_list->begin();
-        std::advance(it, id);
-
-        if (it != sv_list->end())
+        filter_stream << "(ether dst ";
+        for (int j = 0; j < ETHER_ADDR_LEN; ++j)
         {
-            if (idx > 0)
+            filter_stream << std::hex << static_cast<int>(it->ether_dhost[j]);
+            if (j < ETHER_ADDR_LEN - 1)
             {
-                filter_stream << " or ";
+                filter_stream << ":";
             }
-            filter_stream << "(ether dst ";
-            for (int j = 0; j < ETHER_ADDR_LEN; ++j)
-            {
-                filter_stream << std::hex << static_cast<int>(it->ether_dhost[j]);
-                if (j < ETHER_ADDR_LEN - 1)
-                {
-                    filter_stream << ":";
-                }
-            }
+        }
 
-            filter_stream << " and ether src ";
-            for (int j = 0; j < ETHER_ADDR_LEN; ++j)
-            {
-                filter_stream << std::hex << static_cast<int>(it->ether_shost[j]);
-                if (j < ETHER_ADDR_LEN - 1)
-                {
-                    filter_stream << ":";
-                }
-            }
-            filter_stream << " and ether proto 0x88ba";
-            filter_stream << ")";
-        }
-        else
+        filter_stream << " and ether src ";
+        for (int j = 0; j < ETHER_ADDR_LEN; ++j)
         {
-            std::cerr << "Index out of range for id " << id << std::endl;
+            filter_stream << std::hex << static_cast<int>(it->ether_shost[j]);
+            if (j < ETHER_ADDR_LEN - 1)
+            {
+                filter_stream << ":";
+            }
         }
+        filter_stream << " and ether proto 0x88ba";
+        filter_stream << ")";
+    }
+    else
+    {
+        std::cerr << "Can't find selected SV among all SV" << std::endl;
     }
 
     filter_stream << ")";

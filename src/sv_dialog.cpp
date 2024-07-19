@@ -97,8 +97,6 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
     }
     else
     {
-        wxGetApp().sv_sub.select_sv_streams();
-
         std::cout << "Number of selected items: " << n << std::endl;
 
         long num_of_drawingPanels = -1;
@@ -130,9 +128,11 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
 
             wxGetApp().sv_handler.CreateHandler(index);
         }
+        // Get id of selected SV in ComboBox 
         auto id = wxGetApp().sv_sub.selectedSV_ids->at(0);
         std::shared_ptr<long> selectedSV_id_main = std::make_shared<long>(id);
-        wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;
+        wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;  // Memorize id of SV selected in ComboBox
+        wxGetApp().sv_sub.create_bpf_filter();                      // Create bpf filter for SV selected in ComboBox
 
         wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
         wxGetApp().GetMainFrame()->num_of_drawingPanels = num_of_drawingPanels;

@@ -202,10 +202,11 @@ void MainFrame::OnComboBoxSelect(wxCommandEvent &event)
 	// Get ComboBox selection id
 	int idx = toolComboBox->GetSelection();
 
-	// Get id of selected SV stream
+	// Get id of selected SV in ComboBox 
 	auto id = wxGetApp().sv_sub.selectedSV_ids->at(idx);
 	std::shared_ptr<long> selectedSV_id_main = std::make_shared<long>(id);
-	wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;
+	wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;	// Memorize id of SV selected in ComboBox
+	wxGetApp().sv_sub.create_bpf_filter();						// Create bpf filter for SV selected in ComboBox
 
 	// Modify iterator using needed id of selected SV
 	auto it = wxGetApp().sv_sub.sv_list->begin();
