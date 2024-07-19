@@ -6,8 +6,11 @@
 #include <cstdint>
 #include <utility>
 #include <algorithm>
+#include <ctime>
 
 #include <arpa/inet.h>
+
+#include "signal_analyzer.h"
 
 #define CURRENT_SCALE 1000.0
 #define VOLTAGE_SCALE 100.0
@@ -65,6 +68,8 @@ public:
     std::pair<long int, long int> reference_ts;
     uint16_t reference_smpCnt;
     // std::vector<std::vector<SV_raw>> SV_data_raw;
+
+    SignalAnalyzer SAnalyzer;
 
 private:
     uint16_t num_of_meas;

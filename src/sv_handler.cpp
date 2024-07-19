@@ -49,7 +49,7 @@ void SVHandler::InitializeAttributes()
 
     reference_ts.first = 0;
     reference_ts.second = 0;
-    reference_smpCnt = -1;
+    reference_smpCnt = 0;
     prev_smpCnt = 0;
 }
 
@@ -77,12 +77,18 @@ void SVHandler::ProcessData()
     // Create a reference to non-operating list
     std::vector<std::pair<uint16_t, std::vector<uint32_t>>> &data_raw = SV_data_raw[operating_list == 0 ? 1 : 0];
 
+    // Calculate local time from reference header time
+    struct tm *time;
+    time = gmtime(&reference_ts.first);
+
+    float dt = 1.0/num_of_points;
+
     // Update SV_data
     for (size_t i = 0; i != data_raw.size(); ++i)
     {
         frame_sv.smpCnt = data_raw[i].first;
-        frame_sv.utcTime.sec = 110;
-        frame_sv.utcTime.usec = 234322;
+        frame_sv.utcTime.sec = time->tm_sec;
+        frame_sv.utcTime.usec = dt * i;
 
         if (num_of_meas > 4)
         {

@@ -109,6 +109,7 @@ wxThread::ExitCode SVProcessThread::Entry()
     auto idx = wxGetApp().sv_sub.selectedSV_id_main;
     auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
     handler_ptr->ProcessData();
+    handler_ptr->SAnalyzer.CalculateParameters();
         
     // wxThread::Sleep(50);
 

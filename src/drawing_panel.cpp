@@ -110,21 +110,28 @@ void DrawingPanel::Render(wxDC &dc)
         
         auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
 
+        std::vector<float> amp(2);
+        amp[0] = sv_handler_ptr->SAnalyzer.current_amp;
+        amp[1] = sv_handler_ptr->SAnalyzer.voltage_amp;
+
+        float yWindowScale = 1;
+        int x, y;
+
         if (!sv_handler_ptr->SV_data.empty())
         {
-            // std::cout << "Drawing!!!" << std::endl;
             for (const auto &data : sv_handler_ptr->SV_data)
             {
-                int x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset_x;
-                int y = static_cast<int>(centerY - (data.PhsMeasList[0 + number_of_meas/2 * pos].secData/10 * yScale));
+                yWindowScale = height / amp[pos] / 2;
+
+                x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset_x;
+                y = static_cast<int>(centerY - (data.PhsMeasList[0 + number_of_meas/2 * pos].secData * yScale) * yWindowScale);
                 scaledPointsA.emplace_back(wxPoint(x, y));
 
-                y = static_cast<int>(centerY - (data.PhsMeasList[1 + number_of_meas/2 * pos].secData/10 * yScale));
+                y = static_cast<int>(centerY - (data.PhsMeasList[1 + number_of_meas/2 * pos].secData * yScale) * yWindowScale);
                 scaledPointsB.emplace_back(wxPoint(x, y));
 
-                y = static_cast<int>(centerY - (data.PhsMeasList[2 + number_of_meas/2 * pos].secData/10 * yScale));
+                y = static_cast<int>(centerY - (data.PhsMeasList[2 + number_of_meas/2 * pos].secData * yScale) * yWindowScale);
                 scaledPointsC.emplace_back(wxPoint(x, y));
-                
             }
 
             // Phase A
