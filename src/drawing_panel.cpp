@@ -6,7 +6,8 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
       pos(position),
       isGreen(false),
       xScale(0.1), yScale(0.5),
-      pivotPoint(0, 0)
+      pivotPoint(0, 0),
+      cursorInside(false)
 {
     m_parent = this->GetParent();
 
@@ -27,6 +28,10 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
     this->Bind(wxEVT_SCROLLWIN_LINEDOWN, &DrawingPanel::OnScroll, this);
     this->Bind(wxEVT_SCROLLWIN_PAGEUP, &DrawingPanel::OnScroll, this);
     this->Bind(wxEVT_SCROLLWIN_PAGEDOWN, &DrawingPanel::OnScroll, this);
+
+    // Bind mouse enter and leave events
+    this->Bind(wxEVT_ENTER_WINDOW, &DrawingPanel::OnMouseEnter, this);
+    this->Bind(wxEVT_LEAVE_WINDOW, &DrawingPanel::OnMouseLeave, this);
 
     SetVirtualSize(14400, 200);
     SetScrollRate(1, 0);
@@ -152,13 +157,16 @@ void DrawingPanel::Render(wxDC &dc)
             scaledPointsC.clear();
             scaledPointsC.shrink_to_fit();
 
-            // Draw a vertical line at the cursor position
-            dc.SetPen(*wxBLACK_DASHED_PEN);
-            dc.DrawLine(m_cursorPosition.x, 0, m_cursorPosition.x, height);
+            if (cursorInside)
+            {
+                // Draw a vertical line at the cursor position
+                dc.SetPen(*wxBLACK_DASHED_PEN);
+                dc.DrawLine(m_cursorPosition.x, 0, m_cursorPosition.x, height);
 
-            // Draw the cursor coordinates as a string
-            wxString positionString = wxString::Format("(%d, %d)", (m_cursorPosition.x + offset_x), m_cursorPosition.y);
-            dc.DrawText(positionString, m_cursorPosition.x + 15, m_cursorPosition.y + 15);
+                // Draw the cursor coordinates as a string
+                wxString positionString = wxString::Format("(%d, %d)", (m_cursorPosition.x + offset_x), m_cursorPosition.y);
+                dc.DrawText(positionString, m_cursorPosition.x + 15, m_cursorPosition.y + 15);
+            }
         }
     }
 }
@@ -191,5 +199,19 @@ void DrawingPanel::OnMouseWheel(wxMouseEvent &event)
 
     Refresh();
 
+    event.Skip();
+}
+
+void DrawingPanel::OnMouseEnter(wxMouseEvent &event)
+{
+    cursorInside = true;
+    Refresh();
+    event.Skip();
+}
+
+void DrawingPanel::OnMouseLeave(wxMouseEvent &event)
+{
+    cursorInside = false;
+    Refresh();
     event.Skip();
 }

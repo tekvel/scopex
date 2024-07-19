@@ -42,9 +42,12 @@ private:
     void OnMouseMotion(wxMouseEvent &event);
     void OnScroll(wxScrollWinEvent &event);
     void OnMouseWheel(wxMouseEvent &event);
+    void OnMouseEnter(wxMouseEvent &event);
+    void OnMouseLeave(wxMouseEvent &event);
 
     wxWindow *m_parent;
     wxPoint m_cursorPosition;
+    bool cursorInside;
 };
 
 #endif
