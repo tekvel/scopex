@@ -1,5 +1,4 @@
 #include "vector_panel.h"
-#include "signals.h"
 
 VectorPanel::VectorPanel(wxWindow *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL)

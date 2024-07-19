@@ -3,7 +3,6 @@
 
 #include <wx/wx.h>
 #include <wx/panel.h>
-#include "sinusoidal_panel.h"
 #include "vector_panel.h"
 #include "drawing_panel.h"
 
