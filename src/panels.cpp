@@ -110,7 +110,7 @@ downPanel::downPanel(wxPanel *parent, int num_of_drawingPanels) : wxPanel(parent
     hbox->Fit(this);
 }
 
-void downPanel::SynchronizeScroll(DrawingPanel* source, int newPosition)
+void downPanel::SynchronizeScroll(DrawingPanel *source, int newPosition)
 {
     if (num_of_sinPanels == 2)
     {
@@ -123,6 +123,25 @@ void downPanel::SynchronizeScroll(DrawingPanel* source, int newPosition)
         else if (source == m_drawingPanel2 && m_drawingPanel1 != nullptr)
         {
             m_drawingPanel1->SetScrollPos(wxHORIZONTAL, newPosition, true);
+            m_drawingPanel1->Refresh();
+            m_drawingPanel1->Update();
+        }
+    }
+}
+
+void downPanel::SynchronizeXScale(DrawingPanel *source, float newXScale)
+{
+    if (num_of_sinPanels == 2)
+    {
+        if (source == m_drawingPanel1 && m_drawingPanel2 != nullptr)
+        {
+            m_drawingPanel2->xScale = newXScale;
+            m_drawingPanel2->Refresh();
+            m_drawingPanel2->Update();
+        }
+        else if (source == m_drawingPanel2 && m_drawingPanel1 != nullptr)
+        {
+            m_drawingPanel1->xScale = newXScale;
             m_drawingPanel1->Refresh();
             m_drawingPanel1->Update();
         }

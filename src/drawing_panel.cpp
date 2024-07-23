@@ -6,8 +6,9 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
       pos(position),
       isGreen(false),
       xScale(0.1), yScale(0.5),
-      pivotPoint(0, 0),
-      cursorInside(false)
+      pivotPoint(80, 0),
+      cursorInside(false),
+      isDragging(false), lastMouseX(0)
 {
     m_parent = this->GetParent();
 
@@ -16,11 +17,11 @@ DrawingPanel::DrawingPanel(wxWindow *parent, int position)
     // Bind paint event
     this->Bind(wxEVT_PAINT, &DrawingPanel::OnPaint, this);
 
-    // Bind mouse motion event
+    // Bind mouse events
     this->Bind(wxEVT_MOTION, &DrawingPanel::OnMouseMotion, this);
-
-    // Bind mouse wheel event
     this->Bind(wxEVT_MOUSEWHEEL, &DrawingPanel::OnMouseWheel, this);
+    this->Bind(wxEVT_LEFT_DOWN, &DrawingPanel::OnMouseLeftDown, this);
+    this->Bind(wxEVT_LEFT_UP, &DrawingPanel::OnMouseLeftUp, this);
 
     // Bind scroll events
     this->Bind(wxEVT_SCROLLWIN_THUMBTRACK, &DrawingPanel::OnScroll, this);
@@ -78,9 +79,10 @@ void DrawingPanel::Render(wxDC &dc)
         int centerY = height / 2;
 
         // Axes
+        int vertical_axis_pos = 80;
         dc.SetPen(*wxBLACK_PEN);
         dc.DrawLine(0, centerY, width, centerY);
-        dc.DrawLine(centerX, 0, centerX, height);
+        dc.DrawLine(vertical_axis_pos, 0, vertical_axis_pos, height);
 
         // Display Point "Signal Update" if pos = 0 (up drawing panel)
         if (pos == 0)
@@ -111,7 +113,7 @@ void DrawingPanel::Render(wxDC &dc)
         std::vector<wxPoint> scaledPointsB;
         std::vector<wxPoint> scaledPointsC;
 
-        pivotPoint.x = centerX + offset_x;
+        pivotPoint.x = centerX;
         
         auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
 
@@ -128,7 +130,8 @@ void DrawingPanel::Render(wxDC &dc)
             {
                 yWindowScale = height / amp[pos] / 2;
 
-                x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset_x;
+                x = static_cast<int>((data.smpCnt - offset_x) * xScale) + pivotPoint.x;
+                // x = static_cast<int>((data.smpCnt - pivotPoint.x + centerX) * xScale + pivotPoint.x) - offset_x;
                 y = static_cast<int>(centerY - (data.PhsMeasList[0 + number_of_meas/2 * pos].secData * yScale) * yWindowScale);
                 scaledPointsA.emplace_back(wxPoint(x, y));
 
@@ -148,6 +151,19 @@ void DrawingPanel::Render(wxDC &dc)
             // Phase C
             dc.SetPen(wxPen(wxColor(PHASE_C_COLOR), 5));
             dc.DrawSpline(scaledPointsC.size(), &scaledPointsC[0]);
+
+            // yTicks
+            dc.SetPen(*wxBLACK_PEN);
+            for (int i = 1; i != 3; ++i)
+            {
+                dc.DrawLine(vertical_axis_pos - 10, centerY - amp[pos] / 2 * i * yScale * yWindowScale, vertical_axis_pos + 10, centerY - amp[pos] / 2 * i * yScale * yWindowScale);
+                wxString amp_string = wxString::Format("%.1f", (amp[pos] / 2 * i));
+                dc.DrawText(amp_string, vertical_axis_pos - 60, centerY - amp[pos] / 2 * i * yScale * yWindowScale);
+
+                dc.DrawLine(vertical_axis_pos - 10, centerY + amp[pos] / 2 * i * yScale * yWindowScale, vertical_axis_pos + 10, centerY + amp[pos] / 2 * i * yScale * yWindowScale);
+                amp_string = wxString::Format("%.1f", -(amp[pos] / 2 * i));
+                dc.DrawText(amp_string, vertical_axis_pos - 60, centerY + amp[pos] / 2 * i * yScale * yWindowScale);
+            }
 
             // Delete scaledPoints variable
             scaledPointsA.clear();
@@ -175,7 +191,19 @@ void DrawingPanel::OnMouseMotion(wxMouseEvent &event)
 {
     // Get the cursor coordinates relative to the panel
     m_cursorPosition = event.GetPosition();
+
+    if (isDragging)
+    {
+        int deltaX = (event.GetX() - lastMouseX) * 5;
+        int newScrollPos = GetScrollPos(wxHORIZONTAL) - deltaX;
+
+        SetScrollPos(wxHORIZONTAL, newScrollPos, true);
+        wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newScrollPos);
+    }
+
+    lastMouseX = event.GetX();
     Refresh();
+    event.Skip();
 }
 
 void DrawingPanel::OnScroll(wxScrollWinEvent &event)
@@ -189,13 +217,18 @@ void DrawingPanel::OnScroll(wxScrollWinEvent &event)
 void DrawingPanel::OnMouseWheel(wxMouseEvent &event)
 {
     int rotation = event.GetWheelRotation();
-    int linesPerRotation = event.GetLinesPerAction();
-    int scrollAmount = rotation / event.GetWheelDelta() * linesPerRotation * 10;
 
-    int newScrollPos = GetScrollPos(wxHORIZONTAL) - scrollAmount;
+    float scaleFactor = 0.05f;
+    if (rotation > 0)
+    {
+        xScale += scaleFactor;
+    }
+    else if (rotation < 0)
+    {
+        xScale = std::max(0.1f, xScale - scaleFactor); // Ensure xScale does not go below a minimum value
+    }
 
-    SetScrollPos(wxHORIZONTAL, newScrollPos, true);
-    wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newScrollPos);
+    wxGetApp().GetMainFrame()->m_dp->SynchronizeXScale(this, xScale);
 
     Refresh();
 
@@ -213,5 +246,27 @@ void DrawingPanel::OnMouseLeave(wxMouseEvent &event)
 {
     cursorInside = false;
     Refresh();
+    event.Skip();
+}
+
+void DrawingPanel::OnMouseLeftDown(wxMouseEvent &event)
+{
+    if (event.LeftDown())
+    {
+        isDragging = true;
+        SetCursor(wxCursor(wxCURSOR_HAND));
+        lastMouseX = event.GetX();
+        pivotPoint.x = m_cursorPosition.x;
+    }
+    event.Skip();
+}
+
+void DrawingPanel::OnMouseLeftUp(wxMouseEvent &event)
+{
+    if (isDragging)
+    {
+        isDragging = false;
+        SetCursor(wxCursor(wxCURSOR_ARROW));
+    }
     event.Skip();
 }

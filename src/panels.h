@@ -32,7 +32,8 @@ class downPanel : public wxPanel
 public:
     downPanel(wxPanel *parent, int num_of_drawingPanels);
 
-    void SynchronizeScroll(DrawingPanel* source, int newPosition);
+    void SynchronizeScroll(DrawingPanel *source, int newPosition);
+    void SynchronizeXScale(DrawingPanel *source, float newXScale);
 
     VectorPanel *m_vecPanel;
     DrawingPanel *m_drawingPanel1;

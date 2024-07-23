@@ -44,10 +44,14 @@ private:
     void OnMouseWheel(wxMouseEvent &event);
     void OnMouseEnter(wxMouseEvent &event);
     void OnMouseLeave(wxMouseEvent &event);
+    void OnMouseLeftDown(wxMouseEvent &event);
+    void OnMouseLeftUp(wxMouseEvent &event);
 
     wxWindow *m_parent;
     wxPoint m_cursorPosition;
     bool cursorInside;
+    bool isDragging;
+    int lastMouseX;
 };
 
 #endif
