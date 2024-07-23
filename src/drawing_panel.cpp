@@ -59,6 +59,13 @@ void DrawingPanel::Render(wxDC &dc)
     auto sv_indices = wxGetApp().sv_handler.GetListOfSVIndices();
     auto idx = wxGetApp().sv_sub.selectedSV_id_main;
 
+    wxSize size = this->GetSize();
+    int width = size.GetWidth();
+    int height = size.GetHeight();
+
+    dc.SetPen(*wxBLACK_PEN);
+    dc.DrawRectangle(0, 0 ,width, height);
+
     if (sv_indices.size() != 0 && idx != nullptr)
     {
         auto it = wxGetApp().sv_sub.sv_list->begin();
@@ -66,10 +73,6 @@ void DrawingPanel::Render(wxDC &dc)
 
         auto number_of_points = it->F;
         auto number_of_meas = it->DatSet;
-
-        wxSize size = this->GetSize();
-        int width = size.GetWidth();
-        int height = size.GetHeight();
 
         int virtualWidth = static_cast<int>(number_of_points + width);
         SetVirtualSize(virtualWidth, 200);
@@ -79,32 +82,10 @@ void DrawingPanel::Render(wxDC &dc)
         int centerY = height / 2;
 
         // Axes
-        int vertical_axis_pos = 80;
+        int vertical_axis_pos = centerX;
         dc.SetPen(*wxBLACK_PEN);
         dc.DrawLine(0, centerY, width, centerY);
         dc.DrawLine(vertical_axis_pos, 0, vertical_axis_pos, height);
-
-        // Display Point "Signal Update" if pos = 0 (up drawing panel)
-        if (pos == 0)
-        {
-            dc.SetPen(*wxBLACK_PEN);
-            dc.DrawRectangle(0, 0, 100, 30);
-            
-            dc.DrawText(wxT("Update:"), wxPoint(5, 5));
-
-            if (isGreen)
-            {
-                dc.SetPen(*wxWHITE_PEN);
-                dc.SetBrush(*wxGREEN_BRUSH);
-                dc.DrawCircle(75, 14, 6);
-            }
-            else
-            {
-                dc.SetPen(*wxWHITE_PEN);
-                dc.SetBrush(*wxRED_BRUSH);
-                dc.DrawCircle(75, 14, 6);
-            }
-        }
         
         // Calculate the offset relative to the shift of wxScrolledWindow
         int offset_x = GetScrollPos(wxHORIZONTAL);
@@ -158,11 +139,38 @@ void DrawingPanel::Render(wxDC &dc)
             {
                 dc.DrawLine(vertical_axis_pos - 10, centerY - amp[pos] / 2 * i * yScale * yWindowScale, vertical_axis_pos + 10, centerY - amp[pos] / 2 * i * yScale * yWindowScale);
                 wxString amp_string = wxString::Format("%.1f", (amp[pos] / 2 * i));
-                dc.DrawText(amp_string, vertical_axis_pos - 60, centerY - amp[pos] / 2 * i * yScale * yWindowScale);
+                
+                // Calculate text position
+                int textX = vertical_axis_pos - 60;
+                int textY = centerY - amp[pos] / 2 * i * yScale * yWindowScale;
+
+                // Get text extent to determine the rectangle size
+                wxCoord textWidth, textHeight;
+                dc.GetTextExtent(amp_string, &textWidth, &textHeight);
+
+                // Draw white rectangle behind the text
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(*wxWHITE_BRUSH);
+                dc.DrawRectangle(textX, textY, textWidth, textHeight);
+
+                // Draw the text
+                dc.SetPen(*wxBLACK_PEN);
+                dc.DrawText(amp_string, textX, textY);
 
                 dc.DrawLine(vertical_axis_pos - 10, centerY + amp[pos] / 2 * i * yScale * yWindowScale, vertical_axis_pos + 10, centerY + amp[pos] / 2 * i * yScale * yWindowScale);
                 amp_string = wxString::Format("%.1f", -(amp[pos] / 2 * i));
-                dc.DrawText(amp_string, vertical_axis_pos - 60, centerY + amp[pos] / 2 * i * yScale * yWindowScale);
+                
+                // Calculate text position for the negative amplitude
+                textY = centerY + amp[pos] / 2 * i * yScale * yWindowScale;
+
+                // Draw white rectangle behind the text
+                dc.SetPen(*wxTRANSPARENT_PEN);
+                dc.SetBrush(*wxWHITE_BRUSH);
+                dc.DrawRectangle(textX, textY, textWidth, textHeight);
+
+                // Draw the text
+                dc.SetPen(*wxBLACK_PEN);
+                dc.DrawText(amp_string, textX, textY);
             }
 
             // Delete scaledPoints variable
@@ -184,6 +192,28 @@ void DrawingPanel::Render(wxDC &dc)
                 dc.DrawText(positionString, m_cursorPosition.x + 15, m_cursorPosition.y + 15);
             }
         }
+        // Display Point "Signal Update" if pos = 0 (up drawing panel)
+        if (pos == 0)
+        {
+            dc.SetPen(*wxBLACK_PEN);
+            dc.SetBrush(*wxWHITE_BRUSH);
+            dc.DrawRectangle(0, 0, 100, 30);
+            
+            dc.DrawText(wxT("Update:"), wxPoint(5, 5));
+
+            if (isGreen)
+            {
+                dc.SetPen(*wxWHITE_PEN);
+                dc.SetBrush(*wxGREEN_BRUSH);
+                dc.DrawCircle(75, 14, 6);
+            }
+            else
+            {
+                dc.SetPen(*wxWHITE_PEN);
+                dc.SetBrush(*wxRED_BRUSH);
+                dc.DrawCircle(75, 14, 6);
+            }
+        }
     }
 }
 
@@ -194,7 +224,7 @@ void DrawingPanel::OnMouseMotion(wxMouseEvent &event)
 
     if (isDragging)
     {
-        int deltaX = (event.GetX() - lastMouseX) * 5;
+        int deltaX = (event.GetX() - lastMouseX) / xScale;
         int newScrollPos = GetScrollPos(wxHORIZONTAL) - deltaX;
 
         SetScrollPos(wxHORIZONTAL, newScrollPos, true);
@@ -219,14 +249,29 @@ void DrawingPanel::OnMouseWheel(wxMouseEvent &event)
     int rotation = event.GetWheelRotation();
 
     float scaleFactor = 0.05f;
-    if (rotation > 0)
+    if (event.ShiftDown())
     {
-        xScale += scaleFactor;
+        if (rotation > 0)
+        {
+            xScale += scaleFactor;
+        }
+        else if (rotation < 0)
+        {
+            xScale = std::max(0.1f, xScale - scaleFactor); // Ensure xScale does not go below a minimum value of 0.1
+        }
     }
-    else if (rotation < 0)
+    else
     {
-        xScale = std::max(0.1f, xScale - scaleFactor); // Ensure xScale does not go below a minimum value
+        if (rotation > 0)
+        {
+            yScale += scaleFactor;
+        }
+        else if (rotation < 0)
+        {
+            yScale = std::max(0.0f, yScale - scaleFactor); // Ensure yScale does not go below a minimum value of 0
+        }
     }
+    
 
     wxGetApp().GetMainFrame()->m_dp->SynchronizeXScale(this, xScale);
 
