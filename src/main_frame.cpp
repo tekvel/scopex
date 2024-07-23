@@ -74,11 +74,13 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	// Visual content
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 
-	m_up = new upPanel(m_parent, num_of_drawingPanels);
-	topSizer->Add(m_up, 1, wxEXPAND | wxALL, 5);
+	m_notebook1 = new wxNotebook( m_parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 
-	m_dp = new downPanel(m_parent, num_of_drawingPanels);
-	topSizer->Add(m_dp, 5, wxEXPAND | wxALL, 5);
+	m_oscp = new OscilloscopePanel(m_notebook1, num_of_drawingPanels);
+	
+	m_notebook1->AddPage(m_oscp, _("Oscilloscope"), true);
+
+	topSizer->Add(m_notebook1, 5, wxEXPAND | wxALL, 5);
 
 	m_parent->SetSizer(topSizer);
 	m_parent->Layout();
@@ -111,12 +113,15 @@ void MainFrame::RefreshPanels()
     // Clear the existing sizer and delete the existing panels
     m_parent->GetSizer()->Clear(true);
 
-    // Create new instances of upPanel and downPanel with the correct number of panels
-    m_up = new upPanel(m_parent, num_of_drawingPanels);
-    m_parent->GetSizer()->Add(m_up, 1, wxEXPAND | wxALL, 5);
+    // Create new instances of wxNotebook and OscilloscopePanel with the correct number of panels
 
-    m_dp = new downPanel(m_parent, num_of_drawingPanels);
-    m_parent->GetSizer()->Add(m_dp, 5, wxEXPAND | wxALL, 5);
+    // m_oscp = new OscilloscopePanel(m_notebook1, num_of_drawingPanels);
+    // m_notebook1->GetSizer()->Add(m_oscp, 5, wxEXPAND | wxALL, 5);
+
+	m_notebook1 = new wxNotebook( m_parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_oscp = new OscilloscopePanel(m_notebook1, num_of_drawingPanels);
+	m_notebook1->AddPage(m_oscp, _("Oscilloscope"), true);
+	m_parent->GetSizer()->Add(m_notebook1, 5, wxEXPAND | wxALL, 5);
 
     // Re-layout the sizer
     m_parent->GetSizer()->Layout();
@@ -239,19 +244,19 @@ void MainFrame::OnDataProcessed(wxThreadEvent &event)
 {
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel1->isGreen = true;
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->isGreen = true;
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
-		m_dp->m_drawingPanel1->isGreen = true;
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->isGreen = true;
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 
-		m_dp->m_drawingPanel2->isGreen = true;
-		m_dp->m_drawingPanel2->Refresh();
-		m_dp->m_drawingPanel2->Update();
+		m_oscp->m_drawingPanel2->isGreen = true;
+		m_oscp->m_drawingPanel2->Refresh();
+		m_oscp->m_drawingPanel2->Update();
 	}
 	auto now = std::chrono::steady_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - wxGetApp().start).count();
@@ -280,16 +285,16 @@ void MainFrame::OnDataNotFound(wxThreadEvent &event)
 	// Refresh Drawing Panels
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 
-		m_dp->m_drawingPanel2->Refresh();
-		m_dp->m_drawingPanel2->Update();
+		m_oscp->m_drawingPanel2->Refresh();
+		m_oscp->m_drawingPanel2->Update();
 	}
 
 	wxMessageBox(wxT("Can't find selected SV stream in network!\n\nChange SV."), wxT("Stop Displaying"), wxICON_STOP);
@@ -299,18 +304,18 @@ void MainFrame::OnTimer(wxTimerEvent &event)
 {
 	if (num_of_drawingPanels == 1)
 	{
-		m_dp->m_drawingPanel1->isGreen = false;
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->isGreen = false;
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 	}
 	else if (num_of_drawingPanels == 2)
 	{
-		m_dp->m_drawingPanel1->isGreen = false;
-		m_dp->m_drawingPanel1->Refresh();
-		m_dp->m_drawingPanel1->Update();
+		m_oscp->m_drawingPanel1->isGreen = false;
+		m_oscp->m_drawingPanel1->Refresh();
+		m_oscp->m_drawingPanel1->Update();
 
-		m_dp->m_drawingPanel2->isGreen = false;
-		m_dp->m_drawingPanel2->Refresh();
-		m_dp->m_drawingPanel2->Update();
+		m_oscp->m_drawingPanel2->isGreen = false;
+		m_oscp->m_drawingPanel2->Refresh();
+		m_oscp->m_drawingPanel2->Update();
 	}
 }

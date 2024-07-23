@@ -228,7 +228,7 @@ void DrawingPanel::OnMouseMotion(wxMouseEvent &event)
         int newScrollPos = GetScrollPos(wxHORIZONTAL) - deltaX;
 
         SetScrollPos(wxHORIZONTAL, newScrollPos, true);
-        wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newScrollPos);
+        wxGetApp().GetMainFrame()->m_oscp->SynchronizeScroll(this, newScrollPos);
     }
 
     lastMouseX = event.GetX();
@@ -239,7 +239,7 @@ void DrawingPanel::OnMouseMotion(wxMouseEvent &event)
 void DrawingPanel::OnScroll(wxScrollWinEvent &event)
 {
     int newPosition = GetScrollPos(wxHORIZONTAL);
-    wxGetApp().GetMainFrame()->m_dp->SynchronizeScroll(this, newPosition);
+    wxGetApp().GetMainFrame()->m_oscp->SynchronizeScroll(this, newPosition);
 
     event.Skip();
 }
@@ -273,7 +273,7 @@ void DrawingPanel::OnMouseWheel(wxMouseEvent &event)
     }
     
 
-    wxGetApp().GetMainFrame()->m_dp->SynchronizeXScale(this, xScale);
+    wxGetApp().GetMainFrame()->m_oscp->SynchronizeXScale(this, xScale);
 
     Refresh();
 

@@ -5,8 +5,9 @@
 #include <wx/menu.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
+#include <wx/notebook.h>
 
-#include "panels.h"
+#include "osc_panel.h"
 #include "sv_handler_thread.h"
 // Dialog windows
 #include "nif_dialog.h"
@@ -19,8 +20,8 @@ public:
     MainFrame(wxWindow *parent, wxWindowID id = wxID_ANY, const wxString &title = wxEmptyString, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxSize(970, 600), long style = wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL);
     virtual ~MainFrame();
 
-    upPanel *m_up;
-    downPanel *m_dp;
+    wxNotebook *m_notebook1;
+    OscilloscopePanel *m_oscp;
     wxPanel *m_parent;
     wxMenuBar *m_menubar;
     wxMenu *menuFile;
