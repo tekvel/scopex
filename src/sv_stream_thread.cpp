@@ -71,9 +71,12 @@ wxThread::ExitCode SVSearchThread::Entry()
             }
         }
     }
-
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_SEARCH_COMPLETED);
-    wxQueueEvent(wxGetApp().GetMainFrame()->SV_dialog, event);
+    // Post "SV Search Completed" event to SV_dialog window
+    if (wxGetApp().GetMainFrame()->SV_dialog != nullptr && !wxGetApp().GetMainFrame()->SV_dialog->IsBeingDeleted())
+    {
+        wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_SEARCH_COMPLETED);
+        wxQueueEvent(wxGetApp().GetMainFrame()->SV_dialog, event);
+    }
 
     return (wxThread::ExitCode)NULL;
 }
