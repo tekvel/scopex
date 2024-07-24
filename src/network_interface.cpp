@@ -7,10 +7,11 @@ NIF::~NIF()
     {
         pcap_freealldevs(devs);
         pcap_freecode(&fp);
-        if (handle != NULL){
-            pcap_close(handle);
-        }
         devs = nullptr;
+    }
+    if (handle != NULL)
+    {
+        pcap_close(handle);
     }
 }
 
@@ -61,22 +62,22 @@ bool NIF::select_device(int id)
     if (pcap_lookupnet(current_device->name, &netp, &maskp, errbuf) == -1)
     {
         std::cerr << "Error in pcap_lookupnet: " << errbuf << std::endl;
-        return false;
+        // return false;
     }
-    // Open capture device
-    handle = pcap_open_live(current_device->name, BUFSIZ, 1, 12, errbuf);
-    if (handle == nullptr)
-    {
-        std::cerr << "Couldn't open device: " << errbuf << std::endl;
-        return false;
-    }
-    // Set non-blocking mode
-    if (pcap_setnonblock(handle, 1, errbuf) == -1) {
-        std::cerr << "Couldn't set non-blocking mode:" << errbuf << std::endl;
-        return false;
-    }
+    // // Open capture device
+    // handle = pcap_open_live(current_device->name, BUFSIZ, 1, 1000, errbuf);
+    // if (handle == nullptr)
+    // {
+    //     std::cerr << "Couldn't open device: " << errbuf << std::endl;
+    //     return false;
+    // }
+    // // Set non-blocking mode
+    // if (pcap_setnonblock(handle, 1, errbuf) == -1) {
+    //     std::cerr << "Couldn't set non-blocking mode:" << errbuf << std::endl;
+    //     return false;
+    // }
 
-    std::cout << "Device successfully opened" << std::endl;
+    // std::cout << "Device successfully opened" << std::endl;
     return true;
 }
 
@@ -89,6 +90,83 @@ std::string NIF::get_current_device()
     else
     {
         return "";
+    }
+}
+
+int NIF::start_capture(char *filter_exp, std::string callback)
+{
+    // Open capture device
+    handle = pcap_open_live(current_device->name, BUFSIZ, 1, 1000, errbuf);
+    if (handle == nullptr)
+    {
+        std::cerr << "Couldn't open device: " << errbuf << std::endl;
+        return -1;
+    }
+    // Set non-blocking mode
+    if (pcap_setnonblock(handle, 1, errbuf) == -1) {
+        std::cerr << "Couldn't set non-blocking mode:" << errbuf << std::endl;
+        return -1;
+    }
+    std::cout << "Device successfully opened" << std::endl;
+
+    // Compile the filter expression
+    if (pcap_compile(handle, &fp, filter_exp, 0, netp) == -1)
+    {
+        std::cerr << "Couldn't parse filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
+        return -1;
+    }
+    // Apply the compiled filter
+    if (pcap_setfilter(handle, &fp) == -1)
+    {
+        std::cerr << "Couldn't install filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
+        return -1;
+    }
+
+    // Choose callback function
+    pcap_handler callback_fn;
+    if (callback == "parse_sv_streams")
+    {
+        callback_fn = parse_sv_streams;
+    }
+    else if (callback == "got_packet")
+    {
+        callback_fn = got_packet;
+    }
+    else if (callback == "process_sv_data")
+    {
+        callback_fn = process_sv_data;
+    }
+    else
+    {
+        std::cerr << "Couldn't determine callback function" << std::endl;
+        return -1;
+    }
+    
+    // Start the capture loop and handle errors
+    isCapturing = true;
+    int result = pcap_loop(handle, 0, callback_fn, nullptr);
+    if (result == PCAP_ERROR_BREAK)
+    {
+        std::cout << "pcap_loop was manually interrupted" << std::endl;
+    }
+    else if (result < 0)
+    {
+        std::cerr << "Error occurred: " << pcap_geterr(handle) << std::endl;
+        return -1;
+    }
+
+    // Close the session
+    pcap_close(handle);
+    handle = nullptr;
+    return 0;
+}
+
+void NIF::stop_capture()
+{
+    if (isCapturing)
+    {
+        isCapturing = false;
+        pcap_breakloop(handle);
     }
 }
 
@@ -383,7 +461,7 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
         {
             it->second++;
         }
-        if (it->second%48 == 0)
+        if (it->second%192 == 0)
         {
             auto it = wxGetApp().sv_sub.sv_list_prev_time->find(reinterpret_cast<u_int64_t>(&(*val.first)));
             if (it != wxGetApp().sv_sub.sv_list_prev_time->end()) 
@@ -391,7 +469,7 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
                 double time_diff = header->ts.tv_usec - it->second;
                 if (time_diff < 500000)
                 {
-                    u_int64_t F = wxGetApp().sv_sub.get_closer_freq(48000000.0/(time_diff)*stream.noASDU);
+                    u_int64_t F = wxGetApp().sv_sub.get_closer_freq(192000000.0/(time_diff)*stream.noASDU);
                     if (F != -1)
                     {
                         stream.F = F;

@@ -98,7 +98,14 @@ MainFrame::~MainFrame()
 		size_t count = threads.GetCount();
 
 		if (!count)
+		{
+			if (wxGetApp().network_interface.isCapturing)
+			{
+				wxGetApp().network_interface.stop_capture();
+				wxGetApp().sv_sub.search_thread = nullptr;
+			}
 			return;
+		}
 
 		// set the flag indicating that all threads should exit
 		wxGetApp().m_shuttingDown = true;

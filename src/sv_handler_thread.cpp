@@ -29,7 +29,7 @@ wxThread::ExitCode SVHandlerThread::Entry()
 
     std::cout << "SV Processing Thread started" << std::endl;
 
-    int num_packets = 96;
+    int num_packets = 192;
 
     auto filter_exp = wxGetApp().sv_sub.filter_exp;
 
@@ -48,7 +48,7 @@ wxThread::ExitCode SVHandlerThread::Entry()
         if (TestDestroy())
             break;
         
-        if (wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 100) == -2)
+        if (wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 200) == -2)
         {
             timeout_expired += 1;
         }
@@ -110,6 +110,7 @@ wxThread::ExitCode SVProcessThread::Entry()
     auto handler_ptr = wxGetApp().sv_handler.GetSVHandler(*idx);
     handler_ptr->ProcessData();
     handler_ptr->SAnalyzer.CalculateParameters();
+    // handler_ptr->SAnalyzer.calculateAmplitudeAndPhase();
         
     // wxThread::Sleep(50);
 

@@ -68,6 +68,11 @@ SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
 
 SVSelectionDialog::~SVSelectionDialog()
 {
+    if (wxGetApp().network_interface.isCapturing)
+    {
+        wxGetApp().network_interface.stop_capture();
+        wxGetApp().sv_sub.search_thread = nullptr;
+    }
 }
 
 void SVSelectionDialog::OnCancel(wxCommandEvent &event)

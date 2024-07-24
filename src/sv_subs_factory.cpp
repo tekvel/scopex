@@ -1,23 +1,43 @@
 #include "sv_subs_factory.h"
 #include "main.h"
 
+SVSubscribe::SVSubscribe() : timer1(this, wxID_EVT_TIMER_DONE_2SEC)
+{
+    sv_list = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
+    sv_list_raw = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
+    sv_list_cnt = std::make_shared<std::map<uintptr_t, u_int32_t>>();
+    sv_list_prev_time = std::make_shared<std::map<uintptr_t, u_int64_t>>();
+    selectedSV_ids = std::make_shared<std::vector<long>>();
+    selectedSV_id_main = std::make_shared<long>();
+    filter_exp = std::make_shared<std::vector<char>>();
+
+    // Timer events
+	Bind(wxEVT_TIMER, &SVSubscribe::OnTimer, this, wxID_EVT_TIMER_DONE_2SEC);	// EVT_TIMER_DONE
+}
+
+SVSubscribe::~SVSubscribe()
+{
+}
+
 std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubscribe::get_sv_list()
 {
     delete_sv_streams();
     
-    SVSearchThread *thread = new SVSearchThread;
-    if (thread->Create() != wxTHREAD_NO_ERROR)
+    search_thread = new SVSearchThread;
+    if (search_thread->Create() != wxTHREAD_NO_ERROR)
     {
         std::cerr << "Can't create thread!" << std::endl;
         return nullptr;
     }
     wxCriticalSectionLocker enter(wxGetApp().m_critsect);
-    wxGetApp().m_threads.Add(thread);
-    if (thread->Run() != wxTHREAD_NO_ERROR)
+    wxGetApp().m_threads.Add(search_thread);
+    if (search_thread->Run() != wxTHREAD_NO_ERROR)
     {
         std::cerr << "Can't start thread!" << std::endl;
         return nullptr;
     }
+
+    timer1.StartOnce(2000);  // start timer
 
     return sv_list;
 }
@@ -127,4 +147,14 @@ bool SVSubscribe::find_sv(const SV_stream &sv)
         }
     }
     return false;
+}
+
+void SVSubscribe::OnTimer(wxTimerEvent &event)
+{
+    std::cout << "\nTimer is worked\n" << std::endl;
+    if (search_thread != nullptr && search_thread->IsRunning())
+    {
+        search_thread->Stop();
+        search_thread = nullptr;
+    }
 }

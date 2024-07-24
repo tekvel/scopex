@@ -13,6 +13,8 @@
 #include <cstring>
 #include <sstream>
 
+#include <wx/timer.h>
+
 #include "sv_stream_thread.h"
 
 #define ETHER_ADDR_LEN 6
@@ -66,23 +68,21 @@ struct SV_stream
     };
 };
 
-class SVSubscribe
+class SVSearchThread;
+
+class SVSubscribe : public wxEvtHandler
 {
 public:
-    SVSubscribe() : sv_list(std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>()),
-                    sv_list_raw(std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>()),
-                    sv_list_cnt(std::make_shared<std::map<uintptr_t, u_int32_t>>()),
-                    sv_list_prev_time(std::make_shared<std::map<uintptr_t, u_int64_t>>()),
-                    selectedSV_ids(std::make_shared<std::vector<long>>()),
-                    selectedSV_id_main(std::make_shared<long>()),
-                    filter_exp(std::make_shared<std::vector<char>>()) {}
-    ~SVSubscribe() {}
+    SVSubscribe();
+    ~SVSubscribe();
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> get_sv_list();
     void create_bpf_filter();
     void delete_sv_streams();
     u_int64_t get_closer_freq(double raw_F);
     bool find_sv(const SV_stream &sv);
+    
+    void OnTimer(wxTimerEvent &event);
 
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list_raw;
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list;
@@ -94,7 +94,15 @@ public:
     std::shared_ptr<long> selectedSV_id_main;
     std::shared_ptr<std::vector<char>> filter_exp;
 
+    SVSearchThread *search_thread;
+
 private:
+    wxTimer timer1;
+};
+
+enum
+{
+    wxID_EVT_TIMER_DONE_2SEC = 501,
 };
 
 #endif
