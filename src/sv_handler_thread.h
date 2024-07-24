@@ -15,6 +15,8 @@ public:
 
     virtual void *Entry() wxOVERRIDE;
 
+    void Stop();
+
 private:
 };
 

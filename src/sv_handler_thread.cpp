@@ -25,51 +25,42 @@ SVHandlerThread::~SVHandlerThread()
 
 wxThread::ExitCode SVHandlerThread::Entry()
 {
-    SetName("SV Processing Thread");
+    SetName("SV Capture Thread");
 
-    std::cout << "SV Processing Thread started" << std::endl;
+    std::cout << "SV Capture Thread started" << std::endl;
 
-    int num_packets = 192;
-
-    auto filter_exp = wxGetApp().sv_sub.filter_exp;
-
-    int timeout_expired = 0;
-
-    while (true)
     {
-        // check if the application is shutting down
-        {
-            wxCriticalSectionLocker locker(wxGetApp().m_critsect);
-            if (wxGetApp().m_shuttingDown)
-                return NULL;
-        }
-
-        // check if just this thread was asked to exit
-        if (TestDestroy())
-            break;
-        
-        if (wxGetApp().network_interface.sniff_traffic(num_packets, filter_exp->data(), "process_sv_data", 200) == -2)
-        {
-            timeout_expired += 1;
-        }
-        else
-        {
-            timeout_expired = 0;
-        }
-        if (timeout_expired == 20 || wxGetApp().network_interface.noIrrelevantFrames > num_packets * 20)
-        {
-            wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_DATA_NOT_FOUND);
-            wxQueueEvent(wxGetApp().GetMainFrame(), event);
-            break;
-        }
-
-        // wxThread::Sleep(10);
+        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+        if (wxGetApp().m_shuttingDown)
+            return NULL;
     }
 
+    auto filter_exp = wxGetApp().sv_sub.filter_exp;
+    int error = wxGetApp().network_interface.start_capture(filter_exp->data(), "process_sv_data");
+    std::cerr << "Error in start_capture: " << error << std::endl;
+
+    {
+        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+        if (wxGetApp().m_shuttingDown)
+            return NULL;
+    }
+    
     std::cout << "Thread finished!" << std::endl;
 
     return (wxThread::ExitCode)NULL;
 }
+
+void SVHandlerThread::Stop()
+{
+    wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+    if (wxGetApp().network_interface.isCapturing)
+    {
+        wxGetApp().network_interface.stop_capture();
+        wxGetApp().GetMainFrame()->capture_thread = nullptr;
+    }
+}
+
+//--------------------SV Process Thread--------------------//
 
 SVProcessThread::SVProcessThread()
 {

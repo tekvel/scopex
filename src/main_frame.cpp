@@ -52,6 +52,8 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 	EnableTools(false);		// Disable all tools
 
 	// Binding events
+	// Close event
+	Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);	// EVT_Close
 	// Menu events
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnQuit, this, wxID_EXIT);					   // EVT_Quit
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainFrame::OnAbout, this, wxID_ABOUT);				   // EVT_About
@@ -103,6 +105,7 @@ MainFrame::~MainFrame()
 			{
 				wxGetApp().network_interface.stop_capture();
 				wxGetApp().sv_sub.search_thread = nullptr;
+				capture_thread = nullptr;
 			}
 			return;
 		}
@@ -113,6 +116,34 @@ MainFrame::~MainFrame()
 
 	// now wait for them to really terminate
 	wxGetApp().m_semAllDone.Wait();
+}
+
+void MainFrame::OnClose(wxCloseEvent &event)
+{
+	if (wxGetApp().network_interface.isCapturing)
+    {
+        wxGetApp().network_interface.stop_capture();
+        wxGetApp().sv_sub.search_thread = nullptr;
+        capture_thread = nullptr;
+    }
+
+    {
+        wxCriticalSectionLocker locker(wxGetApp().m_critsect);
+        const wxArrayThread &threads = wxGetApp().m_threads;
+        size_t count = threads.GetCount();
+
+        if (!count)
+        {
+            Destroy();
+            return;
+        }
+
+        wxGetApp().m_shuttingDown = true;
+    }
+
+    wxGetApp().m_semAllDone.Wait();
+
+    Destroy();
 }
 
 void MainFrame::RefreshPanels()
@@ -181,15 +212,15 @@ void MainFrame::OnSave(wxCommandEvent &event)
 
 void MainFrame::OnPlay(wxCommandEvent &event)
 {
-	SVHandlerThread *thread = new SVHandlerThread;
-	if (thread->Create() != wxTHREAD_NO_ERROR)
+	capture_thread = new SVHandlerThread;
+	if (capture_thread->Create() != wxTHREAD_NO_ERROR)
 	{
 		std::cerr << "Can't create SVHandler thread!" << std::endl;
 		return;
 	}
 	wxCriticalSectionLocker enter(wxGetApp().m_critsect);
-	wxGetApp().m_threads.Add(thread);
-	if (thread->Run() != wxTHREAD_NO_ERROR)
+	wxGetApp().m_threads.Add(capture_thread);
+	if (capture_thread->Run() != wxTHREAD_NO_ERROR)
 	{
 		std::cerr << "Can't start SVHandler thread!" << std::endl;
 		return;
@@ -203,6 +234,12 @@ void MainFrame::OnStop(wxCommandEvent &event)
 	wxArrayThread &threads = wxGetApp().m_threads;
 	if (!threads.IsEmpty())
 	{
+		if (capture_thread != nullptr && capture_thread->IsRunning())
+		{
+			capture_thread->Stop();
+			capture_thread = nullptr;
+		}
+
 		wxGetApp().m_shuttingDown = true;
 		m_toolbar->EnableTool(wxID_PLAY_TOOLBOX, true);			// Enable Play tool
 		m_toolbar->EnableTool(wxID_COMBO_BOX_TOOLBOX, true);	// Enable ComboBox tool

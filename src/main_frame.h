@@ -13,6 +13,8 @@
 #include "nif_dialog.h"
 #include "sv_dialog.h"
 
+class SVHandlerThread;
+
 class MainFrame : public wxFrame
 {
 
@@ -39,6 +41,7 @@ public:
     wxTimer timer1;
 
     void OnQuit(wxCommandEvent &event);
+    void OnClose(wxCloseEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnStartThread(wxCommandEvent &event);
     void OnNetworkSelect(wxCommandEvent &event);
@@ -57,6 +60,9 @@ public:
     void EnableTools(bool enable);
 
     int num_of_drawingPanels;
+
+    SVHandlerThread *capture_thread;
+
 private:
 };
 

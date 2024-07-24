@@ -70,15 +70,6 @@ wxThread::ExitCode SVSearchThread::Entry()
                 }
             }
         }
-
-        // std::cout << "APPID: " << stream.APPID << std::endl;
-        // std::string svID (stream.svID.begin(), stream.svID.end());
-        // std::cout << "SVID: " << svID << std::endl;
-        // std::cout << "noASDU: " << static_cast<int>(stream.noASDU) << std::endl;
-        // std::cout << "F: " << stream.F << std::endl;
-        // std::cout << "DatSet: " << static_cast<int>(stream.DatSet) << std::endl;
-
-        // std::cout << "\n" << std::endl;
     }
 
     wxThreadEvent *event = new wxThreadEvent(wxEVT_THREAD, wxID_EVT_SEARCH_COMPLETED);
@@ -90,5 +81,9 @@ wxThread::ExitCode SVSearchThread::Entry()
 void SVSearchThread::Stop()
 {
     wxCriticalSectionLocker locker(wxGetApp().m_critsect);
-    wxGetApp().network_interface.stop_capture();
+    if (wxGetApp().network_interface.isCapturing)
+    {
+        wxGetApp().network_interface.stop_capture();
+        wxGetApp().sv_sub.search_thread = nullptr;
+    }
 }

@@ -7,12 +7,13 @@ NIF::~NIF()
     {
         pcap_freealldevs(devs);
         pcap_freecode(&fp);
+        if (handle != NULL)
+        {
+            pcap_close(handle);
+        }
         devs = nullptr;
     }
-    if (handle != NULL)
-    {
-        pcap_close(handle);
-    }
+    
 }
 
 std::shared_ptr<std::vector<std::string>> NIF::get_device_list()
@@ -64,20 +65,6 @@ bool NIF::select_device(int id)
         std::cerr << "Error in pcap_lookupnet: " << errbuf << std::endl;
         // return false;
     }
-    // // Open capture device
-    // handle = pcap_open_live(current_device->name, BUFSIZ, 1, 1000, errbuf);
-    // if (handle == nullptr)
-    // {
-    //     std::cerr << "Couldn't open device: " << errbuf << std::endl;
-    //     return false;
-    // }
-    // // Set non-blocking mode
-    // if (pcap_setnonblock(handle, 1, errbuf) == -1) {
-    //     std::cerr << "Couldn't set non-blocking mode:" << errbuf << std::endl;
-    //     return false;
-    // }
-
-    // std::cout << "Device successfully opened" << std::endl;
     return true;
 }
 
@@ -168,79 +155,6 @@ void NIF::stop_capture()
         isCapturing = false;
         pcap_breakloop(handle);
     }
-}
-
-int NIF::sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms)
-{
-    // Compile the filter expression
-    if (pcap_compile(handle, &fp, filter_exp, 0, netp) == -1)
-    {
-        std::cerr << "Couldn't parse filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
-        return -1;
-    }
-    // Apply the compiled filter
-    if (pcap_setfilter(handle, &fp) == -1)
-    {
-        std::cerr << "Couldn't install filter " << filter_exp << ": " << pcap_geterr(handle) << std::endl;
-        return -1;
-    }
-    
-    // Choose callback function
-    pcap_handler callback_fn;
-    if (callback == "parse_sv_streams")
-    {
-        callback_fn = parse_sv_streams;
-    }
-    else if (callback == "got_packet")
-    {
-        callback_fn = got_packet;
-    }
-    else if (callback == "process_sv_data")
-    {
-        callback_fn = process_sv_data;
-    }
-    else
-    {
-        std::cerr << "Couldn't determine callback function" << std::endl;
-        return -1;
-    }
-
-    auto start = std::chrono::steady_clock::now();
-    int packet_count = 0;
-    // Start capturing packets with timeout
-    while (packet_count < n_packets)
-    {
-        int result = pcap_dispatch(handle, n_packets - packet_count, callback_fn, nullptr);
-
-        if (result > 0)
-        {
-            packet_count += result;
-        }
-        else if (result == 0)
-        {
-            auto now = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-
-            if (elapsed >= timeout_ms)
-            {
-                std::cerr << "Timeout: No packets captured within the specified timeout period of " << timeout_ms << " ms." << std::endl;
-                return -2;
-            }
-
-            // Busy-wait loop to simulate delay of 5 ms
-            auto wait_start = std::chrono::steady_clock::now();
-            while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wait_start).count() < 5)
-            {
-                // Busy-wait
-            }
-        }
-        else
-        {
-            std::cerr << "Error in pcap_dispatch: " << pcap_geterr(handle) << std::endl;
-            return -1;
-        }
-    }
-    return 0;
 }
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
@@ -502,18 +416,15 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
         {
             if (svPDU_len == 0x81)
             {
-                // u_char svPDU = sv_data[offset+2];
                 offset += 3;    // Move to value of svPDU or tag of noASDU
             }
             else if (svPDU_len == 0x82)
             {
-                // u_int16_t svPDU = sv_data[offset+2];
                 offset += 4;    // Move to value of svPDU or tag of noASDU
             }
         }
         else
         {
-            // u_char svPDU = sv_data[offset+1];
             offset += 2;    // Move to value of svPDU or tag of npASDU
         }
         
@@ -530,18 +441,15 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                 {
                     if (seqASDU_len == 0x81)
                     {
-                        // u_char seqASDU = sv_data[offset+2];
                         offset += 3;    // Move to tag of ASDU
                     }
                     else if (seqASDU_len == 0x82)
                     {
-                        // u_int16_t seqASDU = sv_data[offset+2];
                         offset += 4;    // Move to tag of ASDU
                     }
                 }
                 else
                 {
-                    // u_char seqASDU = sv_data[offset+1];
                     offset += 2;    // Move to tag of ASDU
                 }
 
@@ -562,7 +470,6 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
 
                             if (sv_data[offset + i*ASDU_len + 4 + svID_len] == 0x82)
                             {
-                                // u_int16_t smpCnt;
                                 memcpy(&smpCnt, (sv_data + offset + i*ASDU_len + 6 + svID_len), 2);
                                 smpCnt = ntohs(smpCnt);
 
@@ -586,9 +493,15 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                             if (wxGetApp().sv_sub.find_sv(stream))
                                             {
                                                 auto sv_handler_ptr = wxGetApp().sv_handler.GetSVHandler(*wxGetApp().sv_sub.selectedSV_id_main);
+                                                auto it = wxGetApp().sv_sub.sv_list->begin();
+                                                std::advance(it, *wxGetApp().sv_sub.selectedSV_id_main);
 
-                                                if (smpCnt == 0)
-                                                {
+                                                long prev_smpCnt = static_cast<long>(sv_handler_ptr->prev_smpCnt);
+                                                long max_smpCnt = static_cast<long>(it->F);
+                                                auto smpCnt_diff = prev_smpCnt - static_cast<long>(smpCnt);
+
+                                                if (smpCnt_diff > (max_smpCnt - 10))
+                                                {   
                                                     std::cout << "Time in sec: " << header->ts.tv_sec << std::endl;
                                                     std::cout << "Time in nsec: " << header->ts.tv_usec << std::endl;
 
@@ -634,7 +547,6 @@ void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_cha
                                                         if (smpCnt != sv_handler_ptr->prev_smpCnt + 1)
                                                         {
                                                             auto time_diff = header->ts.tv_sec - sv_handler_ptr->reference_ts.first + header->ts.tv_usec/1000000.0 - sv_handler_ptr->reference_ts.second/1000000.0;
-
                                                             if (time_diff > 1)
                                                             {
                                                                 sv_handler_ptr->reference_ts.first = header->ts.tv_sec;
