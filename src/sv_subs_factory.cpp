@@ -5,8 +5,8 @@ SVSubscribe::SVSubscribe() : timer1(this, wxID_EVT_TIMER_DONE_2SEC)
 {
     sv_list = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
     sv_list_raw = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
-    sv_list_cnt = std::make_shared<std::map<uintptr_t, u_int32_t>>();
-    sv_list_prev_time = std::make_shared<std::map<uintptr_t, u_int64_t>>();
+    max_smpCnt = std::make_shared<std::map<uintptr_t, u_int32_t>>();
+    // sv_list_prev_time = std::make_shared<std::map<uintptr_t, u_int64_t>>();
     selectedSV_ids = std::make_shared<std::vector<long>>();
     selectedSV_id_main = std::make_shared<long>();
     filter_exp = std::make_shared<std::vector<char>>();
@@ -46,8 +46,7 @@ void SVSubscribe::delete_sv_streams()
 {
     sv_list->clear();
     sv_list_raw->clear();
-    sv_list_cnt->clear();
-    sv_list_prev_time->clear();
+    max_smpCnt->clear();
     selectedSV_ids->clear();
 
 }
@@ -117,7 +116,7 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
             ind_of_F = i;
         }
     }
-    if (minDiff > 100)
+    if (minDiff > 10)
     {
         return -1;  // If minimal difference is higher than 200 return error
     }

@@ -303,7 +303,7 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
     }
 
     stream.F = 0;
-
+    u_int16_t smpCnt;
     int offset = 0; // Initial offset for SV PDU parsing
 
     if (sv_data[offset] == 0x60)
@@ -373,7 +373,6 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
 
                             if (sv_data[offset + i*ASDU_len + 4 + svID_len] == 0x82)
                             {
-                                u_int16_t smpCnt;
                                 memcpy(&smpCnt, (sv_data + offset + i*ASDU_len + 6 + svID_len), 2);
                                 smpCnt = ntohs(smpCnt);
 
@@ -452,38 +451,17 @@ void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_ch
 
     if (val.second == true)
     {
-        wxGetApp().sv_sub.sv_list_cnt->insert({reinterpret_cast<u_int64_t>(&(*val.first)), 1});
+        wxGetApp().sv_sub.max_smpCnt->insert({reinterpret_cast<u_int64_t>(&(*val.first)), smpCnt});
     }
     else
     {
-        auto it = wxGetApp().sv_sub.sv_list_cnt->find(reinterpret_cast<u_int64_t>(&(*val.first)));
-        if (it != wxGetApp().sv_sub.sv_list_cnt->end()) 
+        auto it = wxGetApp().sv_sub.max_smpCnt->find(reinterpret_cast<u_int64_t>(&(*val.first)));
+        if (it != wxGetApp().sv_sub.max_smpCnt->end()) 
         {
-            it->second++;
-        }
-        if (it->second%192 == 0)
-        {
-            auto it = wxGetApp().sv_sub.sv_list_prev_time->find(reinterpret_cast<u_int64_t>(&(*val.first)));
-            if (it != wxGetApp().sv_sub.sv_list_prev_time->end()) 
+            if (it->second < smpCnt)
             {
-                double time_diff = header->ts.tv_usec - it->second;
-                if (time_diff < 500000)
-                {
-                    u_int64_t F = wxGetApp().sv_sub.get_closer_freq(192000000.0/(time_diff)*stream.noASDU);
-                    if (F != -1)
-                    {
-                        stream.F = F;
-                        wxGetApp().sv_sub.sv_list->insert(stream);
-                    }
-                    else
-                    {
-                        std::cerr << "Error: Freqency value is not defined" << std::endl;
-                    }
-                }
-                wxGetApp().sv_sub.sv_list_prev_time->erase(reinterpret_cast<u_int64_t>(&(*val.first)));
+                it->second = smpCnt;
             }
-            wxGetApp().sv_sub.sv_list_prev_time->insert({reinterpret_cast<u_int64_t>(&(*val.first)), header->ts.tv_usec});
-
         }
     }
 }

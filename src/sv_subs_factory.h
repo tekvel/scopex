@@ -87,8 +87,7 @@ public:
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list_raw;
     std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> sv_list;
 
-    std::shared_ptr<std::map<uintptr_t, u_int32_t>> sv_list_cnt;
-    std::shared_ptr<std::map<uintptr_t, u_int64_t>> sv_list_prev_time;
+    std::shared_ptr<std::map<uintptr_t, u_int32_t>> max_smpCnt;
 
     std::shared_ptr<std::vector<long>> selectedSV_ids;
     std::shared_ptr<long> selectedSV_id_main;
