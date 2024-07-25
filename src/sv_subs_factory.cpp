@@ -1,21 +1,43 @@
 #include "sv_subs_factory.h"
 #include "main.h"
 
+SVSubscribe::SVSubscribe() : timer1(this, wxID_EVT_TIMER_DONE_2SEC)
+{
+    sv_list = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
+    sv_list_raw = std::make_shared<std::unordered_set<SV_stream, SV_stream::SVHashFunction>>();
+    max_smpCnt = std::make_shared<std::map<uintptr_t, u_int32_t>>();
+    // sv_list_prev_time = std::make_shared<std::map<uintptr_t, u_int64_t>>();
+    selectedSV_ids = std::make_shared<std::vector<long>>();
+    selectedSV_id_main = std::make_shared<long>();
+    filter_exp = std::make_shared<std::vector<char>>();
+
+    // Timer events
+	Bind(wxEVT_TIMER, &SVSubscribe::OnTimer, this, wxID_EVT_TIMER_DONE_2SEC);	// EVT_TIMER_DONE
+}
+
+SVSubscribe::~SVSubscribe()
+{
+}
+
 std::shared_ptr<std::unordered_set<SV_stream, SV_stream::SVHashFunction>> SVSubscribe::get_sv_list()
 {
-    SVSearchThread *thread = new SVSearchThread;
-    if (thread->Create() != wxTHREAD_NO_ERROR)
+    delete_sv_streams();
+    
+    search_thread = new SVSearchThread;
+    if (search_thread->Create() != wxTHREAD_NO_ERROR)
     {
         std::cerr << "Can't create thread!" << std::endl;
         return nullptr;
     }
     wxCriticalSectionLocker enter(wxGetApp().m_critsect);
-    wxGetApp().m_threads.Add(thread);
-    if (thread->Run() != wxTHREAD_NO_ERROR)
+    wxGetApp().m_threads.Add(search_thread);
+    if (search_thread->Run() != wxTHREAD_NO_ERROR)
     {
         std::cerr << "Can't start thread!" << std::endl;
         return nullptr;
     }
+
+    timer1.StartOnce(2000);  // start timer
 
     return sv_list;
 }
@@ -24,15 +46,14 @@ void SVSubscribe::delete_sv_streams()
 {
     sv_list->clear();
     sv_list_raw->clear();
-    sv_list_cnt->clear();
-    sv_list_prev_time->clear();
+    max_smpCnt->clear();
     selectedSV_ids->clear();
 
 }
 
-void SVSubscribe::select_sv_streams()
+void SVSubscribe::create_bpf_filter()
 {
-    if (selectedSV_ids->empty())
+    if (selectedSV_id_main == nullptr)
     {
         std::cerr << "SV Stream is not selected!" << std::endl;
         return;
@@ -41,44 +62,36 @@ void SVSubscribe::select_sv_streams()
     std::ostringstream filter_stream;
     filter_stream << "(";
 
-    for (size_t idx = 0; idx < selectedSV_ids->size(); ++idx)
+    auto it = sv_list->begin();
+    std::advance(it, *selectedSV_id_main);
+
+    if (it != sv_list->end())
     {
-        auto id = selectedSV_ids->at(idx);
-        auto it = sv_list->begin();
-        std::advance(it, id);
-
-        if (it != sv_list->end())
+        filter_stream << "(ether dst ";
+        for (int j = 0; j < ETHER_ADDR_LEN; ++j)
         {
-            if (idx > 0)
+            filter_stream << std::hex << static_cast<int>(it->ether_dhost[j]);
+            if (j < ETHER_ADDR_LEN - 1)
             {
-                filter_stream << " or ";
+                filter_stream << ":";
             }
-            filter_stream << "(ether dst ";
-            for (int j = 0; j < ETHER_ADDR_LEN; ++j)
-            {
-                filter_stream << std::hex << static_cast<int>(it->ether_dhost[j]);
-                if (j < ETHER_ADDR_LEN - 1)
-                {
-                    filter_stream << ":";
-                }
-            }
-
-            filter_stream << " and ether src ";
-            for (int j = 0; j < ETHER_ADDR_LEN; ++j)
-            {
-                filter_stream << std::hex << static_cast<int>(it->ether_shost[j]);
-                if (j < ETHER_ADDR_LEN - 1)
-                {
-                    filter_stream << ":";
-                }
-            }
-
-            filter_stream << ")";
         }
-        else
+
+        filter_stream << " and ether src ";
+        for (int j = 0; j < ETHER_ADDR_LEN; ++j)
         {
-            std::cerr << "Index out of range for id " << id << std::endl;
+            filter_stream << std::hex << static_cast<int>(it->ether_shost[j]);
+            if (j < ETHER_ADDR_LEN - 1)
+            {
+                filter_stream << ":";
+            }
         }
+        filter_stream << " and ether proto 0x88ba";
+        filter_stream << ")";
+    }
+    else
+    {
+        std::cerr << "Can't find selected SV among all SV" << std::endl;
     }
 
     filter_stream << ")";
@@ -103,12 +116,44 @@ u_int64_t SVSubscribe::get_closer_freq(double raw_F)
             ind_of_F = i;
         }
     }
-    if (minDiff > 100)
+    if (minDiff > 10)
     {
         return -1;  // If minimal difference is higher than 200 return error
     }
     else
     {
         return possible_F[ind_of_F];
+    }
+}
+
+bool SVSubscribe::find_sv(const SV_stream &sv)
+{
+    auto it = sv_list->begin();
+    std::advance(it, *selectedSV_id_main);
+
+    if (it != sv_list->end())
+    {
+        const SV_stream &selected_sv = *it;
+
+        if (std::memcmp(selected_sv.ether_dhost, sv.ether_dhost, ETHER_ADDR_LEN) == 0 &&
+            std::memcmp(selected_sv.ether_shost, sv.ether_shost, ETHER_ADDR_LEN) == 0 &&
+            selected_sv.APPID == sv.APPID &&
+            selected_sv.noASDU == sv.noASDU &&
+            selected_sv.svID == sv.svID &&
+            selected_sv.DatSet == sv.DatSet)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void SVSubscribe::OnTimer(wxTimerEvent &event)
+{
+    std::cout << "\nTimer is worked\n" << std::endl;
+    if (search_thread != nullptr && search_thread->IsRunning())
+    {
+        search_thread->Stop();
+        search_thread = nullptr;
     }
 }

@@ -68,6 +68,11 @@ SVSelectionDialog::SVSelectionDialog(wxWindow *parent, const wxString &title)
 
 SVSelectionDialog::~SVSelectionDialog()
 {
+    if (wxGetApp().network_interface.isCapturing)
+    {
+        wxGetApp().network_interface.stop_capture();
+        wxGetApp().sv_sub.search_thread = nullptr;
+    }
 }
 
 void SVSelectionDialog::OnCancel(wxCommandEvent &event)
@@ -90,8 +95,6 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
         wxGetApp().sv_sub.selectedSV_ids->push_back(item);
     }
 
-    wxGetApp().sv_sub.select_sv_streams();
-
     int n = selectedItems.GetCount();
     if (n == 0)
     {
@@ -101,15 +104,45 @@ void SVSelectionDialog::OnOK(wxCommandEvent &event)
     {
         std::cout << "Number of selected items: " << n << std::endl;
 
+        long num_of_drawingPanels = -1;
+
+        wxGetApp().GetMainFrame()->toolComboBox->Clear();
+
+        wxGetApp().sv_handler.DeleteHandlers();
+
         for (const auto &index : selectedItems)
         {
-            wxString source = m_svStreamList->GetItemText(index, 0);
-            wxString destination = m_svStreamList->GetItemText(index, 1);
             wxString APPID = m_svStreamList->GetItemText(index, 2);
             wxString SVID = m_svStreamList->GetItemText(index, 3);
+            wxString DatSet = m_svStreamList->GetItemText(index, 6);
+            wxString SV_Stream = "APPID: " + APPID + "; SVID: " +  SVID;
 
-            std::cout << "Selected Item " << index << ": " << source << ", " << destination << ", " << APPID << ", " << SVID << std::endl;
+            if (num_of_drawingPanels < 0)  // check if num_of_drawingPanels variable was changed or not
+            {
+                if (DatSet == "8" || DatSet == "6")
+                {
+                    num_of_drawingPanels = 2;
+                }
+                else
+                {
+                    num_of_drawingPanels = 1;
+                }
+            }
+
+            wxGetApp().GetMainFrame()->toolComboBox->Append(SV_Stream);
+
+            wxGetApp().sv_handler.CreateHandler(index);
         }
+        // Get id of selected SV in ComboBox 
+        auto id = wxGetApp().sv_sub.selectedSV_ids->at(0);
+        std::shared_ptr<long> selectedSV_id_main = std::make_shared<long>(id);
+        wxGetApp().sv_sub.selectedSV_id_main = selectedSV_id_main;  // Memorize id of SV selected in ComboBox
+        wxGetApp().sv_sub.create_bpf_filter();                      // Create bpf filter for SV selected in ComboBox
+
+        wxGetApp().GetMainFrame()->toolComboBox->SetSelection(0);
+        wxGetApp().GetMainFrame()->num_of_drawingPanels = num_of_drawingPanels;
+        wxGetApp().GetMainFrame()->RefreshPanels();
+        wxGetApp().GetMainFrame()->EnableTools(true);
 
         // Close the dialog
         Close(true);
@@ -133,9 +166,7 @@ void SVSelectionDialog::OnUpdate(wxCommandEvent &event)
 
 void SVSelectionDialog::OnSearchComplete(wxThreadEvent &event)
 {
-    // std::cout << "yeah, event is working!!!" << std::endl;
     m_buttonUpdate->Enable(true);
-
     UpdateSVList();
 }
 

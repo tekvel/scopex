@@ -11,6 +11,7 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <utility>
 
 #include "sv_subs_factory.h"
 
@@ -45,13 +46,17 @@ struct tag_ethernet_header
 class NIF
 {
 public:
-    NIF() : device_list(std::make_shared<std::vector<std::string>>()), devs(nullptr) {}
+    NIF() : device_list(std::make_shared<std::vector<std::string>>()), devs(nullptr), noIrrelevantFrames(0), isCapturing(false) {}
     ~NIF();
 
     std::shared_ptr<std::vector<std::string>> get_device_list();
     bool select_device(int id);
     std::string get_current_device();
-    void sniff_traffic(int n_packets, char *filter_exp, std::string callback, int timeout_ms);
+    int start_capture(char *filter_exp, std::string callback);
+    void stop_capture();
+
+    int noIrrelevantFrames;
+    bool isCapturing;
 
 private:
     std::shared_ptr<std::vector<std::string>> device_list;
@@ -69,5 +74,6 @@ private:
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void parse_sv_streams(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void process_sv_data(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 #endif // NETWORK_INTERFACE_H
