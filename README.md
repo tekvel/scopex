@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project was implemented as an Industrial Immersion project in cooperation between Tekvel and Skoltech. It provides a graphical tool for visualizing IEC 61850 Sampled Values, enabling users to interact with and analyze data streams from various sources. The application is capable of working with SV streams that have a basic structure.
+This project was implemented as an Industrial Immersion project in cooperation between [Tekvel](https://tekvel.com) and [Skoltech](https://www.skoltech.ru). It provides a graphical tool for visualizing IEC 61850 Sampled Values, enabling users to interact with and analyze data streams from various sources. The application is capable of working with SV streams that have a basic structure.
 
 ## Prerequisites
 
